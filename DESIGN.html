@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>幸运刮刮乐 · Roguelike 重构策划案</title>
+<style>
+  :root{
+    --gold:#f5c542; --gold-deep:#d49a18; --ink:#2a2118; --paper:#fdf8ef;
+    --silver:#c9cdd4; --red:#e0533d; --green:#2faa6d; --blue:#3d7be0;
+    --purple:#8b5cf6; --card-shadow:0 8px 28px rgba(40,30,10,.14);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:"PingFang SC","Microsoft YaHei","Segoe UI",system-ui,sans-serif;
+    background:
+      radial-gradient(900px 500px at 12% -8%, #fff3cf 0%, transparent 60%),
+      radial-gradient(800px 600px at 100% 0%, #ffe6dc 0%, transparent 55%),
+      linear-gradient(160deg,#fbf4e6 0%, #f3ece0 100%);
+    color:var(--ink); line-height:1.7; padding:0 0 80px;
+  }
+  .wrap{max-width:980px; margin:0 auto; padding:0 22px;}
+
+  /* Hero */
+  header.hero{
+    text-align:center; padding:60px 22px 46px; position:relative; overflow:hidden;
+  }
+  .hero h1{
+    font-size:clamp(30px,5vw,52px); letter-spacing:2px;
+    background:linear-gradient(135deg,#d49a18,#f5c542 45%,#ffe9a8 60%,#d49a18);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    text-shadow:0 2px 0 rgba(0,0,0,.04); font-weight:900;
+  }
+  .hero .sub{margin-top:14px; font-size:17px; color:#7a6b50;}
+  .badges{margin-top:22px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;}
+  .badge{
+    background:rgba(255,255,255,.7); border:1px solid #eadcbf; backdrop-filter:blur(4px);
+    padding:6px 15px; border-radius:999px; font-size:13px; color:#8a7550; font-weight:600;
+  }
+  .coin-deco{font-size:46px; filter:drop-shadow(0 4px 6px rgba(212,154,24,.4)); }
+
+  /* Section */
+  section{
+    background:var(--paper); border:1px solid #efe4d0; border-radius:20px;
+    padding:30px 32px; margin:22px 0; box-shadow:var(--card-shadow);
+  }
+  h2{
+    font-size:23px; font-weight:800; color:#3a2e1c; margin-bottom:18px;
+    display:flex; align-items:center; gap:12px; padding-bottom:12px;
+    border-bottom:2px dashed #e6d4ab;
+  }
+  h2 .num{
+    flex:0 0 auto; width:34px; height:34px; border-radius:10px;
+    background:linear-gradient(135deg,var(--gold),var(--gold-deep)); color:#fff;
+    display:grid; place-items:center; font-size:16px; box-shadow:0 4px 10px rgba(212,154,24,.35);
+  }
+  h3{font-size:17px; margin:18px 0 8px; color:#5b4a2e;}
+  p{margin:8px 0;}
+  strong{color:#b8480f;}
+  ul{margin:8px 0 8px 4px; list-style:none;}
+  ul li{padding:3px 0 3px 22px; position:relative;}
+  ul li::before{content:"◆"; color:var(--gold-deep); position:absolute; left:2px; font-size:11px; top:7px;}
+
+  .tagline{
+    font-size:18px; line-height:1.9; padding:6px 0; color:#4a3c26;
+  }
+
+  /* Core loop */
+  .loop{
+    background:linear-gradient(135deg,#fff,#fdf6e6); border:1px dashed #e0cb9a;
+    border-radius:14px; padding:18px 22px; font-family:"Consolas",monospace;
+    white-space:pre-wrap; font-size:13.5px; color:#5b4a2e; line-height:1.9;
+  }
+
+  /* Table */
+  table{width:100%; border-collapse:collapse; margin:12px 0; font-size:14px; overflow:hidden; border-radius:12px;}
+  th{background:linear-gradient(135deg,#3a2e1c,#574326); color:#ffe9b8; padding:11px 12px; text-align:left; font-weight:700;}
+  td{padding:10px 12px; border-bottom:1px solid #efe2c9;}
+  tbody tr:nth-child(odd){background:#fffdf7;}
+  tbody tr:nth-child(even){background:#f8f0df;}
+  tbody tr:hover{background:#fff3d0;}
+
+  /* Card grid */
+  .cards{display:grid; grid-template-columns:repeat(auto-fill,minmax(270px,1fr)); gap:16px; margin-top:14px;}
+  .gcard{
+    border-radius:16px; padding:18px; color:#fff; position:relative; overflow:hidden;
+    box-shadow:0 6px 18px rgba(0,0,0,.18); min-height:150px;
+  }
+  .gcard::after{content:""; position:absolute; inset:0; background:linear-gradient(180deg,rgba(255,255,255,.12),transparent 40%); pointer-events:none;}
+  .gcard .lv{font-size:12px; opacity:.85; font-weight:700; letter-spacing:1px;}
+  .gcard .name{font-size:20px; font-weight:900; margin:4px 0 6px; display:flex; align-items:center; gap:8px;}
+  .gcard .price{position:absolute; top:14px; right:16px; background:rgba(0,0,0,.28); padding:4px 11px; border-radius:999px; font-size:13px; font-weight:700;}
+  .gcard .play{font-size:13.5px; line-height:1.65; opacity:.96;}
+  .gcard .risk{margin-top:10px; font-size:12px; background:rgba(0,0,0,.22); display:inline-block; padding:3px 10px; border-radius:8px;}
+  .c1{background:linear-gradient(135deg,#b5832e,#8a5f1c);}
+  .c2{background:linear-gradient(135deg,#3fae6b,#1f7d49);}
+  .c3{background:linear-gradient(135deg,#5a6b8c,#2d3a55);}
+  .c4{background:linear-gradient(135deg,#e0533d,#a82a6b);}
+  .c5{background:linear-gradient(135deg,#5b3f9e,#1a1240);}
+
+  /* perk / tool chips */
+  .chips{display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:10px; margin-top:12px;}
+  .chip{
+    background:#fff; border:1px solid #ecdcb8; border-radius:12px; padding:12px 14px;
+    box-shadow:0 2px 8px rgba(40,30,10,.05);
+  }
+  .chip .t{font-weight:800; color:#9a4a12; margin-bottom:3px;}
+  .chip .d{font-size:13px; color:#6a5a3e;}
+
+  /* layout ascii */
+  .layout{
+    background:#241c12; color:#f5d98a; border-radius:14px; padding:18px;
+    font-family:"Consolas",monospace; font-size:12.5px; white-space:pre; overflow-x:auto; line-height:1.55;
+  }
+
+  pre.code{
+    background:#241c12; color:#cfe9b0; border-radius:14px; padding:18px 20px;
+    font-family:"Consolas",monospace; font-size:13px; overflow-x:auto; line-height:1.7;
+  }
+  .note{
+    background:#fff8e6; border-left:4px solid var(--gold); padding:10px 16px;
+    border-radius:0 10px 10px 0; font-size:14px; color:#7a6233; margin:12px 0;
+  }
+  .warn{
+    background:#fdeee9; border-left:4px solid var(--red); padding:10px 16px;
+    border-radius:0 10px 10px 0; font-size:14px; color:#9a4029; margin:12px 0;
+  }
+  .ideas{counter-reset:idea; display:grid; gap:10px; margin-top:8px;}
+  .idea{
+    background:linear-gradient(135deg,#fff,#fdf6e6); border:1px solid #eddfbd; border-radius:12px;
+    padding:12px 16px 12px 52px; position:relative;
+  }
+  .idea::before{
+    counter-increment:idea; content:counter(idea); position:absolute; left:14px; top:50%; transform:translateY(-50%);
+    width:26px; height:26px; border-radius:50%; background:linear-gradient(135deg,var(--gold),var(--gold-deep));
+    color:#fff; display:grid; place-items:center; font-weight:800; font-size:13px;
+  }
+  .idea b{color:#b8480f;}
+  .check li{padding-left:26px;}
+  .check li::before{content:"☐"; color:var(--red); font-size:15px; top:4px;}
+  footer{text-align:center; color:#a08a64; font-size:13px; margin-top:30px;}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="coin-deco">🪙 🎰 💎</div>
+  <h1>幸运刮刮乐 · Roguelike 重构</h1>
+  <div class="sub">用金币买卡 · 刮出收益 · 攒币升级 · 肉鸽增益 · 跌破 0 即破产</div>
+  <div class="badges">
+    <span class="badge">版本 v2 设计稿（待确认）</span>
+    <span class="badge">单人 Roguelike 经营/博彩</span>
+    <span class="badge">画布 920 × 460</span>
+    <span class="badge">宠物围观陪伴</span>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <section>
+    <h2><span class="num">1</span>一句话定位</h2>
+    <p class="tagline">用金币购买不同等级的刮刮卡，刮出收益 → 攒够金币升级 → 解锁更高面值、更高风险的卡 → 每次升级获得肉鸽式增益 <strong>三选一</strong> → 金币跌破 0 即破产结束。<br><strong>攒金币、控风险、滚雪球。</strong></p>
+  </section>
+
+  <section>
+    <h2><span class="num">2</span>核心循环 Core Loop</h2>
+    <div class="loop">开局（读取全局金币 / 等级 / 增益）
+   ↓
+左侧商店选卡 → 扣金币购买
+   ↓
+中央刮卡（鼠标滑过刮开）→ 揭晓
+   ↓
+结算：余额 − 卡价 + 奖金 − 罚金
+   ├─ 金币达到等级阈值 → 升级 → 肉鸽三选一 → 解锁新卡 / 刮具
+   └─ 金币 &lt; 0 → 破产 → 本局结束（记录最高金币 / 最大 jackpot）
+   ↓
+继续买下一张 …</div>
+    <ul>
+      <li><strong>金币是全局变量</strong>，跨局持久，升级<strong>不清空</strong>。</li>
+      <li>等级一旦达成<strong>永久保留</strong>（金币回落也不降级）。</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="num">3</span>数值总框架（RTP 设计）</h2>
+    <p>风险张力来自：原始卡 RTP 接近或略低于 100%（缓慢失血），靠 <strong>肉鸽增益 + 刮具</strong> 把长期 RTP 拉到 100% 以上。玩得好滚雪球，贪心买不起的高风险卡就会被 💣 打穿破产。</p>
+    <table>
+      <thead><tr><th>等级</th><th>卡片</th><th>主题</th><th>售价</th><th>目标RTP</th><th>风险</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>铜板卡</td><td>古朴铜钱/木纹</td><td>10</td><td>~103%</td><td>无 💣，安全爬坡</td></tr>
+        <tr><td>2</td><td>果园卡</td><td>清新果园</td><td>25</td><td>~100%</td><td>中方差，吊胃口</td></tr>
+        <tr><td>3</td><td>矿洞卡</td><td>幽暗矿洞宝石</td><td>60</td><td>~98%</td><td>💣 塌方，首张可破产卡</td></tr>
+        <tr><td>4</td><td>赌城卡</td><td>霓虹赌场老虎机</td><td>150</td><td>~95%</td><td>巨奖 + 巨罚</td></tr>
+        <tr><td>5</td><td>星海卡</td><td>深空星海（鲸佬）</td><td>400</td><td>~92%</td><td>极限波动</td></tr>
+      </tbody>
+    </table>
+    <div class="note">RTP 为设计目标，实现后需用蒙特卡洛模拟 10k 次微调权重 / 面值收敛。</div>
+
+    <h3>升级阈值（累计金币达到即升，永久）</h3>
+    <table>
+      <thead><tr><th>等级</th><th>达到金币</th><th>解锁内容</th></tr></thead>
+      <tbody>
+        <tr><td>Lv.1</td><td>初始 100</td><td>铜板卡</td></tr>
+        <tr><td>Lv.2</td><td>250</td><td>果园卡 + <strong>刮具栏开启</strong></td></tr>
+        <tr><td>Lv.3</td><td>700</td><td>矿洞卡（引入 💣 风险）</td></tr>
+        <tr><td>Lv.4</td><td>1800</td><td>赌城卡</td></tr>
+        <tr><td>Lv.5</td><td>4500</td><td>星海卡</td></tr>
+        <tr><td>Lv.6 (MAX)</td><td>10000</td><td>无尽模式 / 通关结算</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2><span class="num">4</span>卡片详细设计</h2>
+    <div class="cards">
+      <div class="gcard c1">
+        <div class="price">💰 10</div>
+        <div class="lv">LV.1 · 古朴铜钱木纹</div>
+        <div class="name">🪙 铜板刮刮卡</div>
+        <div class="play">3×3，刮出 <b>≥3 个相同图案中奖</b>，按面值×组数赔付。符号：🪙铜钱50%/6 · 🪴竹30%/12 · 🧧红包18%/30 · 🐉龙纹2%/120。</div>
+        <div class="risk">无 💣 · 温和正期望 · 新手稳起步</div>
+      </div>
+      <div class="gcard c2">
+        <div class="price">💰 25</div>
+        <div class="lv">LV.2 · 清新果园</div>
+        <div class="name">🍎 果园刮刮卡</div>
+        <div class="play">9 格 <b>全部为水果 → 大奖</b>（×8 成本）；否则按「最多同种≥3」给安慰奖。符号：🍎🍊🍇🍓 + 🍂枯叶（破坏全水果）。</div>
+        <div class="risk">中方差 · "就差一片叶子" 吊胃口</div>
+      </div>
+      <div class="gcard c3">
+        <div class="price">💰 60</div>
+        <div class="lv">LV.3 · 幽暗矿洞宝石</div>
+        <div class="name">💎 矿洞刮刮卡</div>
+        <div class="play">9 格 <b>全部为矿石 → 巨奖</b>；含 💣 塌方，<b>每个 −20 金币</b>。符号：💎🔷🟡 + 💣。</div>
+        <div class="risk">首张可破产卡 · 贪心+低余额=被打穿</div>
+      </div>
+      <div class="gcard c4">
+        <div class="price">💰 150</div>
+        <div class="lv">LV.4 · 霓虹赌场老虎机</div>
+        <div class="name">🎰 赌城刮刮卡</div>
+        <div class="play">3×3 三条横线，任一全同→中奖；🎰 777 通杀（×15）；💣 炸弹 <b>−60</b>。</div>
+        <div class="risk">巨额 jackpot + 巨额 penalty · 高肾上腺素</div>
+      </div>
+      <div class="gcard c5">
+        <div class="price">💰 400</div>
+        <div class="lv">LV.5 · 深空星海（鲸佬卡）</div>
+        <div class="name">🌌 星海刮刮卡</div>
+        <div class="play">星座连线 + ⭐ 超新星 jackpot（×20）；🕳️ 黑洞 <b>−150</b>。</div>
+        <div class="risk">极限波动 · 一夜暴富 or 一夜归零</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">5</span>肉鸽式升级增益（每次升级三选一 · 持久叠加）</h2>
+    <p>从增益池随机抽 3 个供玩家选择：</p>
+    <div class="chips">
+      <div class="chip"><div class="t">财源广进</div><div class="d">所有中奖金额 +12%</div></div>
+      <div class="chip"><div class="t">精打细算</div><div class="d">购卡价 −8%</div></div>
+      <div class="chip"><div class="t">稳健保底</div><div class="d">每张卡保底返还成本 ×25%</div></div>
+      <div class="chip"><div class="t">一夜暴富</div><div class="d">中奖时 8% 概率金额 ×2</div></div>
+      <div class="chip"><div class="t">拆弹专家</div><div class="d">每张卡自动拆除 1 个 💣/黑洞</div></div>
+      <div class="chip"><div class="t">护身符</div><div class="d">破产免死 1 次（金币归 50），可叠加</div></div>
+      <div class="chip"><div class="t">连击大师</div><div class="d">连中 3 次后下一张 ×1.5</div></div>
+      <div class="chip"><div class="t">鉴宝之眼</div><div class="d">矿石/水果类面值 +20%</div></div>
+      <div class="chip"><div class="t">刮具收藏</div><div class="d">解锁一件新刮具 / 强化已有</div></div>
+      <div class="chip"><div class="t">每日低保</div><div class="d">每开局首张卡免费</div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">6</span>刮具系统（右侧面板 · 每次佩戴 1 件 · 持久拥有）</h2>
+    <table>
+      <thead><tr><th>刮具</th><th>主题</th><th>效果</th><th>获取</th></tr></thead>
+      <tbody>
+        <tr><td>🪙 硬币</td><td>默认</td><td><strong>保底</strong>：揭晓后额外获得「已刮开图案中最高单值」金额</td><td>初始拥有</td></tr>
+        <tr><td>🐚 贝壳</td><td>幸运</td><td>好符号权重 +15%，💣 权重 −30%</td><td>Lv.2 解锁</td></tr>
+        <tr><td>🍀 四叶草</td><td>护身</td><td>开刮前自动移除 1 个 💣/黑洞</td><td>肉鸽</td></tr>
+        <tr><td>🔮 水晶球</td><td>透视</td><td>开局预揭示中央格</td><td>商店 300</td></tr>
+        <tr><td>🧲 磁铁</td><td>吸附</td><td>自动凑近 2 个相同图案（助攻成线/match）</td><td>商店 500</td></tr>
+        <tr><td>⛏️ 钻头</td><td>暴富</td><td>矿洞/赌城中奖 +25%，但 💣 伤害 +25%</td><td>Lv.3 解锁</td></tr>
+        <tr><td>🔨 重锤</td><td>莽夫</td><td>一次刮开十字范围（快），但 💣 触发率 +</td><td>商店 200</td></tr>
+      </tbody>
+    </table>
+    <div class="note">切换佩戴免费；购买 / 解锁后永久拥有。</div>
+  </section>
+
+  <section>
+    <h2><span class="num">7</span>UI 布局（920 × 460 四区）</h2>
+    <div class="layout">┌──────────────────────────────────────────────────┐
+│ 💰 1,240   Lv.3 ▰▰▰▱▱ 距下一级 460        🏆纪录 │ ← 顶部 金币条 + 等级进度
+├──────────┬─────────────────────────────┬─────────┤
+│  商店     │                             │  刮具栏  │
+│ ┌──────┐ │      【当前刮刮卡】           │ ┌─────┐ │
+│ │铜板10│ │   银色涂层 / 刮开揭晓         │ │🪙▶ │ │ ← 佩戴中
+│ ├──────┤ │                             │ ├─────┤ │
+│ │果园25│ │                             │ │🐚  │ │
+│ ├──────┤ │   "鼠标滑过刮开~"            │ ├─────┤ │
+│ │🔒矿洞│ │                             │ │🔒  │ │
+│ └──────┘ │          🐶 围观加油         │ └─────┘ │
+└──────────┴─────────────────────────────┴─────────┘</div>
+    <ul>
+      <li><strong>顶部</strong>：金币数字滚动动画 + 等级进度条（满即升级弹三选一）</li>
+      <li><strong>左侧商店</strong>：按等级解锁；未解锁灰显带 🔒；点击购买并发卡</li>
+      <li><strong>中央</strong>：刮卡台（鼠标 hover 刮开 + 粒子飞散，沿用现有手感）</li>
+      <li><strong>右侧刮具栏</strong>：佩戴 / 切换；未拥有灰显</li>
+      <li><strong>宠物</strong>：底部围观，think（紧张）/ victory（中奖欢呼）/ defeat（安慰）</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="num">8</span>破产 / 风险机制（核心张力）</h2>
+    <ul>
+      <li>金币流：<code>净额 = 余额 − 卡价 + 奖金 − 罚金(💣/黑洞)</code></li>
+      <li>购卡要求 <code>余额 ≥ 卡价</code>；但刮开后的 💣 罚金可把余额打到负。</li>
+      <li><strong>金币 &lt; 0 → 破产 → 本局结束</strong>，结算页显示：最高金币纪录、最大 jackpot、总刮数。</li>
+      <li>风险来源：<strong>低余额时贪买高风险卡</strong>，💣 串出就破产 → 玩家必须留缓冲金 / 用拆弹·保底刮具 / 攒护身符。</li>
+    </ul>
+    <div class="warn">数值护栏：每张卡「最大可能罚金」在购买前显示，让风险<strong>可预期但仍刺激</strong>。</div>
+  </section>
+
+  <section>
+    <h2><span class="num">9</span>持久化数据（gameframe.kvStore("lucky-scratch")）</h2>
+    <pre class="code">{
+  "coins": 1240,
+  "level": 3,
+  "unlockedCards": ["copper", "orchard", "mine"],
+  "ownedTools": ["coin", "shell"],
+  "equippedTool": "coin",
+  "perks": ["fortune", "defuse"],
+  "stats": {
+    "maxCoins": 2100,
+    "biggestJackpot": 480,
+    "totalScratches": 87,
+    "bankruptcies": 1
+  }
+}</pre>
+  </section>
+
+  <section>
+    <h2><span class="num">10</span>动画需求（沿用现有三个，语义微调）</h2>
+    <table>
+      <thead><tr><th>动画</th><th>触发</th><th>fallback</th></tr></thead>
+      <tbody>
+        <tr><td>think</td><td>刮卡中宠物紧张围观</td><td>idle</td></tr>
+        <tr><td>victory</td><td>中奖 / jackpot 欢呼</td><td>idle</td></tr>
+        <tr><td>defeat</td><td>未中奖 / 破产安慰</td><td>sleep</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2><span class="num">11</span>额外好玩建议（可选模块）</h2>
+    <div class="ideas">
+      <div class="idea"><b>手气连击条</b>：连续中奖点亮 combo 槽，满槽触发「金运爆发」短暂全卡折扣或加倍。</div>
+      <div class="idea"><b>宠物吉言 / 毒奶</b>：刮前随机预言（"我觉得这张稳了！"），按 persona 有旺财有乌鸦嘴，命中/打脸都有反应。</div>
+      <div class="idea"><b>神秘限定卡</b>：商店偶现闪光「✨神秘卡✨」，专属美术 + 超高波动，限量 1 张。</div>
+      <div class="idea"><b>图鉴 / 成就</b>：收集刮到过的 jackpot 与稀有符号，集齐解锁隐藏刮具或皮肤。</div>
+      <div class="idea"><b>每日首刮免费 + 每日折扣卡</b>：高频回访钩子。</div>
+      <div class="idea"><b>破产「最后一搏」</b>：余额濒临 0 时，可抵押下一级解锁权换一张「绝地卡」，搏命翻盘。</div>
+      <div class="idea"><b>诅咒 / 黑卡</b>：高风险变体，全程 💣 更多但 jackpot 翻倍，给老玩家的硬核挑战。</div>
+      <div class="idea"><b>金币滚动 + 数字跳动 + 金光彩纸</b>：放大每一次「数字暴涨」的爽感（刮刮乐的灵魂）。</div>
+      <div class="idea"><b>最高纪录排行（本地）</b>：破产结算后展示历史最佳，激发再来一局。</div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">12</span>待确认事项</h2>
+    <ul class="check">
+      <li>初始金币（建议 100）/ 各级阈值是否合适？</li>
+      <li>卡片数量（5 张）与主题是否要增删？</li>
+      <li>破产是否「全清归零重开」还是「保留等级与刮具、仅金币重置」？（建议后者，更肉鸽、有积累感）</li>
+      <li>刮具获取方式：纯商店购买 / 纯肉鸽解锁 / 混合（当前设计为混合）？</li>
+      <li>画布尺寸 920×460 是否接受？</li>
+    </ul>
+  </section>
+
+  <footer>幸运刮刮乐 · Roguelike 重构策划案 · v2 设计稿 — 待确认</footer>
+
+</div>
+</body>
+</html>

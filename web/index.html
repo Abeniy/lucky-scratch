@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>幸运刮刮乐 · Roguelike</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="game" class="game">
+    <!-- 顶部：金币 / 等级进度 / 纪录 -->
+    <header class="topbar">
+      <div class="coins">
+        <span class="coin-icon">💰</span>
+        <span id="coinValue" class="coin-value">100</span>
+      </div>
+      <div class="level-box">
+        <div class="level-label">
+          <span id="levelText">Lv.1</span>
+          <span id="levelHint" class="level-hint">距下一级 150</span>
+        </div>
+        <div class="level-bar">
+          <div id="levelFill" class="level-fill"></div>
+        </div>
+      </div>
+      <div class="record">
+        <span class="record-icon">🏆</span>
+        <span id="recordValue" class="record-value">0</span>
+      </div>
+    </header>
+
+    <!-- 增益条：已获得的肉鸽增益 -->
+    <div id="perkBar" class="perk-bar"></div>
+
+    <!-- 主体三区 -->
+    <main class="board">
+      <!-- 左侧：商店 -->
+      <section class="shop" aria-label="商店">
+        <h2 class="panel-title">商店</h2>
+        <div id="shopList" class="shop-list">
+          <button class="card-item" data-card="copper">
+            <span class="card-emoji">🪙</span>
+            <span class="card-name">铜板卡</span>
+            <span class="card-price">10</span>
+          </button>
+          <button class="card-item locked" data-card="orchard">
+            <span class="card-emoji">🍎</span>
+            <span class="card-name">果园卡</span>
+            <span class="card-lock">🔒</span>
+          </button>
+          <button class="card-item locked" data-card="mine">
+            <span class="card-emoji">💎</span>
+            <span class="card-name">矿洞卡</span>
+            <span class="card-lock">🔒</span>
+          </button>
+          <button class="card-item locked" data-card="casino">
+            <span class="card-emoji">🎰</span>
+            <span class="card-name">赌城卡</span>
+            <span class="card-lock">🔒</span>
+          </button>
+          <button class="card-item locked" data-card="star">
+            <span class="card-emoji">🌌</span>
+            <span class="card-name">星海卡</span>
+            <span class="card-lock">🔒</span>
+          </button>
+          <button class="card-item locked" data-card="spacetime">
+            <span class="card-emoji">⏳</span>
+            <span class="card-name">时空卡</span>
+            <span class="card-lock">🔒</span>
+          </button>
+          <button class="card-item locked" data-card="myth">
+            <span class="card-emoji">🐉</span>
+            <span class="card-name">神话卡</span>
+            <span class="card-lock">🔒</span>
+          </button>
+          <button class="card-item locked" data-card="genesis">
+            <span class="card-emoji">🌌</span>
+            <span class="card-name">创世卡</span>
+            <span class="card-lock">🔒</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- 中央：刮卡台 + 说明面板 -->
+      <section class="stage" aria-label="刮卡台">
+        <div class="scratch-wrap">
+          <div id="scratchArea" class="scratch-area">
+            <div class="scratch-placeholder">鼠标滑过刮开~</div>
+            <!-- Canvas 涂层将在步骤3注入 -->
+          </div>
+        </div>
+        <aside id="cardInfo" class="card-info" aria-label="刮刮卡说明"></aside>
+      </section>
+
+      <!-- 右侧：刮具栏 -->
+      <aside class="tools" aria-label="刮具栏">
+        <h2 class="panel-title">刮具</h2>
+        <div id="toolList" class="tool-list">
+          <button class="tool-item equipped" data-tool="coin">
+            <span class="tool-emoji">🪙</span>
+            <span class="tool-name">硬币</span>
+            <span class="tool-flag">▶</span>
+          </button>
+          <button class="tool-item locked" data-tool="shell">
+            <span class="tool-emoji">🐚</span>
+            <span class="tool-name">贝壳</span>
+            <span class="tool-lock">🔒</span>
+          </button>
+          <button class="tool-item locked" data-tool="clover">
+            <span class="tool-emoji">🍀</span>
+            <span class="tool-name">四叶草</span>
+            <span class="tool-lock">🔒</span>
+          </button>
+          <button class="tool-item locked" data-tool="crystal">
+            <span class="tool-emoji">🔮</span>
+            <span class="tool-name">水晶球</span>
+            <span class="tool-lock">🔒</span>
+          </button>
+          <button class="tool-item locked" data-tool="drill">
+            <span class="tool-emoji">⛏️</span>
+            <span class="tool-name">钻头</span>
+            <span class="tool-lock">🔒</span>
+          </button>
+        </div>
+      </aside>
+    </main>
+
+    <!-- 底部状态条 -->
+    <footer class="statusbar">
+      <span id="statusMsg" class="status-msg">选一张卡开始刮吧</span>
+      <button id="resetBtn" class="reset-btn">清档重开</button>
+    </footer>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>

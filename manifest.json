@@ -1,0 +1,90 @@
+{
+  "name": "Lucky Scratch",
+  "id": "lucky-scratch",
+  "version": 3,
+  "description": "Roguelike 刮刮乐！用金币购买分等级的刮刮卡，按住鼠标在涂层上滑动刮出连续刮痕。攒金币升级解锁更高面值高风险的卡，每次升级获得肉鸽式增益三选一，还能佩戴刮具触发特殊效果。金币跌破 0 即破产。宠物在旁围观加油~",
+  "estimatedMinutes": [3, 12],
+  "screenSize": { "width": 760, "height": 428 },
+  "players": {
+    "count": 2,
+    "assignment": "sequential",
+    "roles": {
+      "player_0": { "label": "玩家" },
+      "player_1": { "label": "围观宠物" }
+    },
+    "playerTypes": {
+      "player_0": "human",
+      "player_1": "pet"
+    }
+  },
+  "turnStructure": {
+    "type": "simple-alternating",
+    "phases": [
+      {
+        "name": "scratch",
+        "timeoutSeconds": 600,
+        "timeoutFallback": "skip",
+        "requiresLLM": false
+      }
+    ],
+    "maxTurns": 2
+  },
+  "display": {
+    "fullscreenScene": false,
+    "hideOriginalSprites": false,
+    "petMapping": {
+      "type": "pet-as-player",
+      "playerPosition": "side",
+      "playerSize": 96
+    },
+    "layout": {
+      "type": "card-table"
+    },
+    "petPositions": [
+      { "x": -140, "y": 150 }
+    ]
+  },
+  "animationDeclares": [
+    {
+      "name": "think",
+      "description": "宠物紧张地观察刮卡进度",
+      "generatePrompt": "16帧逐帧动画描绘角色紧张期待的样子，身体微微前倾，双手握在胸前，眼睛睁大盯着前方，偶尔踮起脚尖探头张望，表现焦急等待的心情。",
+      "fallback": "idle",
+      "loop": true,
+      "fps": 5
+    },
+    {
+      "name": "victory",
+      "description": "宠物中奖后开心庆祝，跳跃欢呼",
+      "generatePrompt": "16帧逐帧动画描绘角色中奖后超级开心的庆祝，原地跳跃，双手高举挥舞，满脸灿烂笑容，身体兴奋地扭动，表现出极度喜悦。",
+      "fallback": "idle",
+      "loop": true,
+      "fps": 6
+    },
+    {
+      "name": "defeat",
+      "description": "没中奖或破产时宠物失落安慰的表情",
+      "generatePrompt": "16帧逐帧动画描绘角色失望但鼓励的样子，先是肩膀下垂叹气，然后振作起来握拳给你打气，眼神中带着'下次一定行'的鼓励。",
+      "fallback": "sleep",
+      "loop": true,
+      "fps": 4
+    }
+  ],
+  "llm": {
+    "outputFormat": {
+      "schema": {
+        "reaction": "string (pet's reaction comment)"
+      },
+      "example": {
+        "reaction": "哇！这张赌城卡刮出 777 了！发达啦！"
+      }
+    },
+    "maxRetries": 1,
+    "retryOnInvalidMove": false
+  },
+  "economy": {
+    "winner": { "base": 10 },
+    "loser": { "base": 10 },
+    "draw": { "base": 10 }
+  }
+}
