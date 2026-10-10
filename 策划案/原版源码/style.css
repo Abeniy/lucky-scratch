@@ -1,0 +1,2359 @@
+/* ===== 自定义字体：方正兰亭黑 Pro ===== */
+@font-face {
+  font-family: "FZLTRegular";
+  src: url("./assets/fonts/FZLTBlackProGlobal.ttf") format("truetype");
+  font-display: swap;
+}
+@font-face {
+  font-family: "FZLTHeavy";
+  src: url("./assets/fonts/FZLTBlackProGlobalHeavy.ttf") format("truetype");
+  font-display: swap;
+}
+
+/* ===== 自定义字体：法恩装饰体（FarnModern） ===== */
+@font-face {
+  font-family: "FarnModern";
+  src: url("./assets/fonts/FarnModern-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "FarnModern";
+  src: url("./assets/fonts/FarnModern-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-display: swap;
+}
+
+/* ===== 全局 · 深色霓虹主题 ===== */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg-0: #07060f;          /* 最深背景 */
+  --bg-1: #0e0c1d;          /* 容器底 */
+  --panel: #15122a;         /* 面板 */
+  --panel-2: #1c1838;       /* 面板高亮 */
+  --border: #2a2450;        /* 描边 */
+  --text: #d8d4f0;          /* 主文字 */
+  --text-dim: #8983b5;      /* 次文字 */
+
+  --neon-cyan: #00f0ff;
+  --neon-pink: #ff2bd6;
+  --neon-purple: #9d4bff;
+  --neon-lime: #b6ff3c;
+  --neon-gold: #ffd23c;
+
+  --glow-cyan: rgba(0, 240, 255, 0.55);
+  --glow-pink: rgba(255, 43, 214, 0.55);
+  --glow-purple: rgba(157, 75, 255, 0.5);
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  font-family: "FZLTRegular", "FZLTHeavy", "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+  background-image: url("./assets/bg.jpg?v=5");
+  background-position: center center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-color: var(--bg-0);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+/* ===== 舞台单元：刮刮卡 + 下方购入栏（同一 flex 列，间距固定 → 相对位置恒定） ===== */
+.game {
+  width: 920px;
+  height: auto;              /* 由内容决定：卡片 800 + gap 20 + 购入栏 120 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;                 /* 卡片与购入栏的固定间距（缩放时同比例变化） */
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: visible;
+  transform-origin: center center;   /* 由 fitStage() 写入 translateY + scale */
+}
+
+/* ===== 页面顶部 HUD（不占据游戏容器空间） ===== */
+.topbar {
+  position: fixed;
+  left: 20px;
+  right: 20px;
+  top: 18px;
+  height: 56px;
+  z-index: 120;
+  pointer-events: none;
+  /* 三列栅格：左列=得分控件 / 中列=等级条 / 右列=等宽占位。
+     两侧列共用同一个下限 --hud-side（= 得分控件实际宽度 + 24px 间隙，由 JS 维护），
+     下限相同 + 弹性系数相同 → 两侧永远等宽，等级条始终光学居中；
+     两侧列不可被侵占，所以等级条再怎么缩也压不到得分控件上（这就是隐形边界）。 */
+  display: grid;
+  grid-template-columns:
+    minmax(var(--hud-side, 176px), 1fr)
+    minmax(320px, 980px)
+    minmax(var(--hud-side, 176px), 1fr);
+  align-items: start;
+  column-gap: 0;
+}
+
+/* 窄屏兜底：缩小得分控件 + 降低等级条下限，保证极窄窗口下等级条仍完整可见且居中 */
+@media (max-width: 720px) {
+  .topbar {
+    grid-template-columns:
+      minmax(var(--hud-side, 128px), 1fr)
+      minmax(200px, 980px)
+      minmax(var(--hud-side, 128px), 1fr);
+  }
+  .score-label { font-size: 20px; }
+  .coin-value { font-size: 28px; }
+}
+
+/* 得分：无底框、无图标，白色粗体中文前缀 + 黄色渐变粗体倾斜数字 */
+.coins {
+  grid-column: 1;        /* 顶栏栅格第 1 列 */
+  position: relative;    /* 不再绝对定位，交给栅格排布 */
+  left: 0;
+  top: 0;
+  /* 关键：收缩到内容宽度（不能拉伸填满整列，否则与 JS 测宽形成"越量越大"的循环） */
+  justify-self: start;
+  width: max-content;
+  height: 56px;
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  min-width: 0;
+  padding: 0;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+.score-label {
+  position: relative;
+  top: -4px;          /* “得分”两字相对数字上移 */
+  font-size: 26px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+.coin-value {
+  display: inline-block;
+  font-size: 36px;
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: 1px;
+  padding: 0 4px;
+  /* 偏黄的橙金色实心字（无渐变，边缘干净无描边） */
+  color: #ffc42e;
+  -webkit-text-fill-color: #ffc42e;
+  -webkit-text-stroke: 0;
+  /* 橙色发光：内层亮橙 + 外层柔橙扩散 */
+  filter:
+    drop-shadow(0 0 6px rgba(255, 150, 0, 0.9))
+    drop-shadow(0 0 14px rgba(255, 120, 0, 0.5));
+}
+
+/* 等级条：无底板，直接浮在桌面上；整体拉长加粗
+   缩放适应：宽度由顶栏栅格的中间列决定（上限 980、下限 320），
+   两侧 1fr 列最小为 min-content（= 得分控件实际宽度），形成隐形边界，两者永不重叠 */
+.level-box {
+  grid-column: 2;
+  position: relative;    /* 不再 absolute + translateX(-50%) */
+  left: auto;
+  top: auto;
+  margin-top: 4px;
+  width: 100%;
+  max-width: none;
+  min-width: 0;          /* 去掉 560px 硬下限，避免窄屏溢出 */
+  transform: none;
+  padding: 0;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+.level-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+  white-space: nowrap;   /* 窄屏不换行，避免顶栏被撑高 */
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 7px;
+  color: #ffc42e;   /* 与得分数字同色系的橙色 */
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.75);
+}
+.level-hint {
+  font-size: 13px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;   /* 极窄时截断而不是溢出 */
+  opacity: 0.85;
+  color: rgba(255, 255, 255, 0.88);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.75);
+}
+.level-bar {
+  height: 20px;   /* 宽度变窄一点 */
+  background: rgba(10, 8, 20, 0.45);
+  border-radius: 14px;
+  overflow: hidden;
+  border: 2px solid rgba(10, 8, 20, 0.25);   /* 描边透明度再降低 */
+}
+.level-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #ffe08a 0%, #ffc42e 55%, #ff9d00 100%);
+  border-radius: 10px;
+  box-shadow: 0 0 14px rgba(255, 150, 0, 0.75);
+  transition: width 0.4s ease;
+}
+
+/* 右上角历史最高纪录：已隐藏（JS 仍会写入该节点，避免报错） */
+.record {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 56px;
+  display: none;   /* 隐藏右上角历史最高纪录（必须放在最后，覆盖上面的 display:flex） */
+  align-items: center;
+  gap: 5px;
+  min-width: 92px;
+  justify-content: center;
+  padding: 0 14px;
+  background: rgba(18, 15, 36, 0.72);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35), 0 0 18px rgba(255, 43, 214, 0.12);
+}
+.record-icon { font-size: 18px; filter: drop-shadow(0 0 5px var(--neon-pink)); }
+.record-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--neon-pink);
+  text-shadow: 0 0 8px var(--glow-pink);
+}
+
+/* ===== 主体：中间刮卡台 ===== */
+.board {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+  padding: 0;
+  min-height: 0;
+}
+
+.panel-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--neon-purple);
+  text-align: center;
+  margin-bottom: 8px;
+  letter-spacing: 3px;
+  text-shadow: 0 0 8px var(--glow-purple);
+}
+
+/* 刮具独立面板：去掉深紫底板，让方框直接浮在桌面上 */
+.tools {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: none;
+  min-height: 0;
+}
+/* 去掉底板后，给文字加深色投影保证在木桌上可读 */
+.tool-dock .panel-title {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.75);
+}
+.tool-dock .tool-name {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.75);
+}
+.tool-dock .tool-desc {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.75);
+}
+/* 刮具栏：贴页面右边缘；缩放与垂直居中由 fitTools()/fitStage() 计算
+   （不再用 top:50%+translateY(-50%) 这种只按视口居中的写法） */
+.tool-dock {
+  position: absolute;
+  right: 50px;
+  top: 0;
+  width: 128px;
+  max-height: 900px;
+  transform-origin: center center;
+}
+/* 刮具说明气泡：纸片素材，出现在对应刮具圆框左方，切换刮具时短暂显示 */
+.tool-tip {
+  position: absolute;
+  right: calc(100% - 10px);   /* 整体再右移，横幅尾部压住圆框左侧 */
+  top: 0;
+  width: 180px;
+  min-height: 56px;          /* 纸片随文字行数伸缩，避免文字被裁 */
+  height: auto;
+  background: url("./assets/icons/tool_tip.png?v=2") center / 100% 100% no-repeat;
+  display: flex;
+  align-items: center;
+  padding: 6px 24px 6px 14px; /* 右侧避开纸片箭头缺口 */
+  z-index: 140;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(10px, -50%);
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+.tool-tip.show {
+  opacity: 1;
+  transform: translate(0, -50%);
+}
+.tool-tip-text {
+  color: #6b5335;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.55;
+}
+/* 每个刮具：上方方框 + 下方数字按钮 */
+.tool-entry {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.shop-list, .tool-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+}
+/* 刮具列表居中，缩小后方框不会靠左 */
+.tool-list {
+  align-items: center;
+  overflow: visible;   /* 让选中态发光可以溢出到方框之外 */
+}
+.card-slot-list {
+  flex-direction: row;
+  gap: 20px;
+  overflow: visible;
+}
+
+/* 卡片 / 刮具 通用按钮 */
+.card-item, .tool-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 9px;
+  background: linear-gradient(135deg, var(--panel-2), #14112b);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+  position: relative;
+}
+.card-item:hover, .tool-item:hover {
+  transform: translateY(-2px);
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 14px var(--glow-cyan);
+}
+.card-emoji, .tool-emoji { font-size: 18px; flex: 0 0 auto; }
+.card-name, .tool-name { flex: 1; font-weight: 600; }
+.card-art-img {
+  display: inline-block;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  vertical-align: middle;
+}
+.card-art-copper { background-image: url("./assets/cards/copper.png?v=5"); }
+.card-art-orchard { background-image: url("./assets/cards/orchard.png?v=2"); }
+.card-art-mine { background-image: url("./assets/cards/mine.png?v=6"); }
+.card-art-casino { background-image: url("./assets/cards/casino.png?v=2"); }
+.card-art-star { background-image: url("./assets/cards/star.png?v=4"); }
+.card-art-spacetime { background-image: url("./assets/cards/spacetime.png?v=1"); }
+/* 刮具栏图片图标（仅影响刮具栏；刮卡时的鼠标光标仍用 emoji） */
+.tool-icon-img {
+  display: inline-block;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+.tool-icon-coin {
+  width: 75px;
+  height: 75px;
+  background-image: url("./assets/icons/tool_coin.png?v=1");
+}
+.tool-icon-shell {
+  width: 60px;
+  height: 60px;
+  background-image: url("./assets/icons/tool_shell.png?v=1");
+}
+.tool-icon-clover {
+  width: 60px;
+  height: 60px;
+  background-image: url("./assets/icons/tool_clover.png?v=1");
+}
+.tool-icon-crystal {
+  width: 60px;
+  height: 60px;
+  background-image: url("./assets/icons/tool_crystal.png?v=1");
+}
+.tool-icon-drill {
+  width: 60px;
+  height: 60px;
+  background-image: url("./assets/icons/tool_drill.png?v=1");
+}
+.card-slot {
+  width: 120px;
+  height: 120px;
+  flex: 0 0 120px;
+  padding: 18px 12px 16px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  background: url("./assets/icons/slot_square.png?v=3") center / contain no-repeat;
+  text-align: center;
+  overflow: visible;
+}
+.card-slot:hover {
+  background-image: url("./assets/icons/slot_square_hover.png?v=3");
+  box-shadow: none;
+  border-color: transparent;
+}
+.card-slot.empty {
+  pointer-events: none;
+  opacity: 0.45;
+}
+.card-slot .card-emoji { font-size: 30px; line-height: 1; }
+.card-slot .card-art-img {
+  width: 46px;
+  height: 46px;
+}
+.card-slot .card-name {
+  flex: 0 0 auto;
+  width: 100%;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 900;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.75);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.card-slot .card-price,
+.card-slot .card-lock {
+  font-size: 12px;
+  line-height: 1;
+  border-radius: 999px;
+  padding: 3px 8px;
+}
+.card-slot:not(.locked) .card-lock { display: none; }
+.card-slot.locked .card-price { display: none; }
+/* 刮具：方框底图的方块按钮（底图为透明中间装饰边框，保持比例不拉伸） */
+.tool-item {
+  position: relative;   /* 让 🔒 / 💰 徽章绝对定位，图标才能保持居中 */
+  width: 92px;
+  height: 92px;
+  flex: 0 0 92px;
+  padding: 8px 8px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  border: 0;
+  border-radius: 0;
+  background: url("./assets/icons/tool_frame.png?v=1") center / contain no-repeat;
+  box-shadow: none;
+  text-align: center;
+}
+.tool-item:hover {
+  border-color: transparent;
+  box-shadow: none;
+}
+.tool-item.equipped {
+  border-color: transparent;
+  box-shadow: none;
+  filter: none;   /* 去掉原来的绿色选中光效 */
+}
+/* 选中态：发光圆环叠在圆框底下（z-index -1 使其位于方框底图之下） */
+.tool-item.equipped::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 96px;
+  height: 96px;
+  transform: translate(-50%, -50%);
+  background: url("./assets/icons/tool_glow.png?v=1") center / contain no-repeat;
+  z-index: -1;
+  pointer-events: none;
+}
+/* 未解锁刮具：变暗处理（覆盖共享的灰度规则） */
+.tool-item.locked {
+  filter: brightness(0.62) saturate(0.6);
+  opacity: 0.75;
+}
+.tool-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+}
+.tool-emoji { font-size: 25px; line-height: 1; }
+/* 刮具名：始终单行，过长则省略，避免角标/图标被挤到第二行 */
+.tool-name {
+  flex: 0 0 auto;
+  min-width: 0;
+  max-width: 100%;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tool-desc {
+  display: block;
+  min-width: 0;
+  max-height: 22px;
+  padding-left: 0;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--neon-lime);
+  white-space: normal;
+  overflow: hidden;
+  text-overflow: clip;
+  word-break: break-word;
+  text-shadow: none;
+}
+.tool-flag, .tool-own { flex: 0 0 auto; white-space: nowrap; }
+/* 未解锁 / 可购买徽章：浮在方框底部，不再占用纵向空间（否则图标会被顶上去、不能居中） */
+.tool-buy, .tool-lock {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 3px;   /* 贴方框底部，避开图标底边（60px 图标底边约在 76px） */
+  flex: 0 0 auto;
+  white-space: nowrap;
+  text-align: center;
+  pointer-events: none;
+}
+.card-price {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0a0816;
+  background: var(--neon-gold);
+  padding: 1px 7px;
+  border-radius: 10px;
+  box-shadow: 0 0 8px rgba(255, 210, 60, 0.6);
+}
+.tool-flag { color: var(--neon-lime); font-weight: 700; text-shadow: 0 0 6px rgba(182, 255, 60, 0.7); }
+.tool-own { font-size: 11px; font-weight: 700; color: var(--text-dim); }
+.tool-buy {
+  font-size: 11px;
+  font-weight: 800;
+  color: #0a0816;
+  background: var(--neon-gold);
+  padding: 1px 6px;
+  border-radius: 7px;
+  white-space: nowrap;
+}
+/* 商店可购买刮具：金色描边，与等级锁定区分 */
+.tool-item.buy { border-color: rgba(255, 210, 60, 0.45); }
+.tool-item.buy:hover { border-color: var(--neon-gold); box-shadow: 0 0 14px rgba(255, 210, 60, 0.4); }
+
+/* 未解锁：只显示锁、不显示价格；解锁后：隐藏锁、显示价格 */
+.card-item:not(.locked) .card-lock { display: none; }
+.card-item.locked .card-price { display: none; }
+
+.card-item.locked, .tool-item.locked {
+  filter: grayscale(0.85) brightness(0.6);
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.card-item.locked:hover, .tool-item.locked:hover {
+  transform: none;
+  border-color: var(--border);
+  box-shadow: none;
+}
+/* 未解锁卡片：悬浮时保持灰暗，不亮起（并且不换成 hover 亮底图） */
+.card-slot.locked:hover {
+  filter: grayscale(0.85) brightness(0.6);
+  opacity: 0.5;
+  background-image: url("./assets/icons/slot_square.png?v=3");
+  border-color: transparent;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+.tool-item.equipped {
+  border-color: transparent;
+  box-shadow: none;
+  filter: none;
+}
+
+/* ===== 中央刮卡台 + 说明面板 ===== */
+.stage {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 0;
+}
+.scratch-wrap {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 0;
+}
+
+/* ===== 下方分页购卡区：五个等距半透明方块（已并入 .game 舞台单元，随卡片一起缩放） ===== */
+.card-dock {
+  position: relative;         /* 不再用 top:1020px 这种相对视口的魔法锚点 */
+  top: auto;
+  left: auto;
+  transform: none;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.slot-row {
+  display: flex;
+  gap: 20px;
+}
+/* 图片按钮（翻页 A/D、刮具数字键 1~5 共用同一底图与字号） */
+.card-page-btn,
+.tool-key-btn {
+  position: relative;
+  top: -3px;
+  width: 48px;
+  height: 48px;
+  border: 0;
+  padding: 0;
+  background: url("./assets/icons/page_btn.png?v=3") center / contain no-repeat;
+  color: #1a1a1a;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  transition: filter 0.12s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* 刮具下方的数字按钮：不继承翻页按钮的上移偏移，并向上压一点与方框底图重叠 */
+.tool-key-btn {
+  top: 0;
+  margin-top: -36px;
+}
+/* 字母在白块上居中，使用全局字体（方正兰亭黑），并带可调倾斜 */
+.page-btn-key {
+  display: inline-block;
+  font-weight: 700;
+  line-height: 1;
+  transform: translate(1px, 3px) skewX(-11.3deg);
+}
+.card-page-btn:hover:not(:disabled),
+.tool-key-btn:hover:not(:disabled) {
+  filter: brightness(1.15);
+  color: #000;
+}
+.card-page-btn:disabled,
+.tool-key-btn:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+.card-page-label {
+  position: absolute;
+  left: 50%;
+  top: 132px;
+  transform: translateX(-50%);
+  font-size: 12px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.8);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.55);
+}
+
+/* 卡片右侧：说明面板 */
+.card-info {
+  flex: 1;
+  min-width: 0;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 12px;
+  background: linear-gradient(180deg, var(--panel), var(--bg-1));
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: inset 0 0 18px rgba(0, 240, 255, 0.07);
+  overflow-y: auto;
+}
+.card-info.is-hidden {
+  display: none;
+}
+.card-info .ci-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed var(--border);
+}
+.card-info .ci-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: var(--neon-cyan);
+  text-shadow: 0 0 10px var(--glow-cyan);
+}
+.card-info .ci-art.card-art-img {
+  width: 26px;
+  height: 26px;
+}
+.card-info .ci-price {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0a0816;
+  background: var(--neon-gold);
+  padding: 1px 8px;
+  border-radius: 10px;
+  box-shadow: 0 0 8px rgba(255, 210, 60, 0.6);
+}
+.card-info .ci-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--neon-purple);
+  text-shadow: 0 0 6px var(--glow-purple);
+  margin-bottom: 5px;
+}
+.card-info .ci-rule {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+/* 概率列表 */
+.card-info .ci-odds { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+.card-info .ci-odds li { display: flex; align-items: center; gap: 8px; }
+.card-info .od-sym { font-size: 18px; width: 22px; text-align: center; flex-shrink: 0; filter: drop-shadow(0 0 5px var(--glow-purple)); }
+.card-info .od-mid { flex: 1; min-width: 0; }
+.card-info .od-top { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; }
+.card-info .od-name { flex: 1; min-width: 0; font-size: 12px; color: var(--text); white-space: nowrap; }
+.card-info .od-pay { flex-shrink: 0; font-size: 10px; color: var(--text-dim); white-space: nowrap; text-align: right; }
+.card-info .od-pay.danger { color: var(--neon-pink); }
+.card-info .od-bar {
+  height: 5px;
+  margin-top: 4px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.card-info .od-bar i {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--neon-cyan), var(--neon-pink));
+  box-shadow: 0 0 8px var(--glow-cyan);
+}
+.card-info .od-pct {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: left;
+  color: var(--neon-lime);
+  text-shadow: 0 0 6px rgba(182, 255, 60, 0.6);
+}
+.scratch-area {
+  position: relative;
+  width: 272px;
+  padding: 8px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #1a1636, #100d24);
+  border: 1px solid var(--neon-cyan);
+  box-shadow:
+    0 0 0 1px rgba(0, 240, 255, 0.2),
+    0 0 28px var(--glow-cyan),
+    inset 0 0 30px rgba(157, 75, 255, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;
+  transform-origin: center center;
+  will-change: transform, opacity;
+}
+/* 铜板卡专属整卡素材 */
+.scratch-area.card-skin-copper {
+  --card-offx: 0px;
+  --card-offy: 0px;
+  --card-scale: 1;
+  width: 800px;
+  height: 800px;
+  background: url("./assets/cards/copper.png?v=5") no-repeat;
+  background-position: calc(50% + var(--card-offx)) calc(50% + var(--card-offy));
+  background-size: calc(100% * var(--card-scale)) auto;
+  /* 投影跟随底图透明轮廓，让卡片像放在桌面上 */
+  filter: drop-shadow(2px 3px 5px rgba(0, 0, 0, 0.45));
+  padding: 0;
+  display: block;
+  gap: 0;
+  border: 0;
+  box-shadow: none;
+  overflow: visible;
+}
+/* 所有整卡素材统一投影：跟随底图透明轮廓，参数与铜板卡一致 */
+.scratch-area.card-skin-copper,
+.scratch-area.card-skin-orchard,
+.scratch-area.card-skin-mine,
+.scratch-area.card-skin-star,
+.scratch-area.card-skin-casino,
+.scratch-area.card-skin-spacetime {
+  filter: drop-shadow(2px 3px 5px rgba(0, 0, 0, 0.45));
+}
+.scratch-area.card-skin-copper .card-header {
+  display: none;
+}
+.scratch-area.card-skin-copper .card-inline-info {
+  position: absolute;
+  left: calc(10.5% + 30px);   /* 左移 30px */
+  top: calc(40.5% + 10px);    /* 上移 40px */
+  width: 27%;
+  height: 31%;
+  z-index: 2;
+  color: #9E302B;
+  font-family: "FZLTRegular", "FZLTHeavy", sans-serif;
+  font-weight: 700;
+  text-shadow: none;
+  pointer-events: none;
+  overflow: hidden;
+}
+.card-inline-info {
+  display: none;
+}
+.scratch-area.card-skin-copper .card-inline-info {
+  display: block;
+}
+/* 铜板卡：中奖要求 / 出现概率 标题加粗 */
+.scratch-area.card-skin-copper .inline-label {
+  font-weight: 700;
+}
+/* 「中奖要求」标题与规则文案整体上移 10px */
+.scratch-area.card-skin-copper .inline-label,
+.scratch-area.card-skin-copper .inline-rule {
+  transform: translateY(-10px);
+}
+/* 铜板卡说明：「中奖要求」居中，概率列表保持左对齐铺满 */
+.scratch-area.card-skin-copper .card-inline-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.scratch-area.card-skin-copper .inline-odds {
+  align-self: stretch;
+  text-align: left;
+  padding-left: 30px;   /* 图案与概率整体右移 30px */
+}
+/* 概率数字改为固定宽度，不再吃掉剩余空间（否则金额会被顶到行尾、margin 失效） */
+.scratch-area.card-skin-copper .od-pct {
+  flex: 0 0 48px;
+  width: 48px;
+}
+.scratch-area.card-skin-copper .inline-odds li {
+  justify-content: flex-start;
+}
+/* 图案后面的中奖金额说明：字号放大并左移 */
+.scratch-area.card-skin-copper .od-pay {
+  font-size: 14px;
+  margin-left: auto;   /* 金额在本行内右对齐 */
+  margin-right: 40px;  /* 但不贴边，右侧留 40px */
+}
+.card-inline-info .num { font-weight: 900; }
+.card-inline-info .inline-label {
+  margin: 0 0 3px;
+  color: #b52c1f;
+  font-size: 16px;
+  font-weight: 700;   /* 所有卡：「中奖要求」标题统一加粗 */
+  letter-spacing: 0.5px;
+}
+.card-inline-info .inline-rule {
+  margin: 0 0 5px;
+  font-size: 13.5px;
+  font-weight: 400;
+  line-height: 1.25;
+}
+.card-inline-info .inline-odds {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.card-inline-info .inline-odds li {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.card-inline-info .od-sym {
+  width: 24px;
+  flex: 0 0 24px;
+  text-align: center;
+  font-size: 18px;
+  line-height: 1;
+}
+.card-inline-info .od-mid {
+  flex: 1;
+  min-width: 0;
+}
+.card-inline-info .od-top {
+  display: flex;
+}
+.card-inline-info .od-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 13.2px;
+  font-weight: 400;
+  white-space: nowrap;
+}
+/* 金额说明：跟在数字概率后面 */
+.card-inline-info .od-pay {
+  flex-shrink: 0;
+  font-size: 11px;
+  white-space: nowrap;
+  text-align: right;
+}
+.card-inline-info .od-bar {
+  height: 3px;
+  margin-top: 1px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: rgba(139, 36, 27, 0.18);
+}
+.card-inline-info .od-bar i {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: #c83a2a;
+}
+.card-inline-info .od-pct {
+  flex: 1;
+  min-width: 0;
+  width: auto;
+  color: #9E302B;
+  font-size: 13.2px;
+  font-weight: 400;
+  text-align: left;
+}
+.scratch-area.card-skin-copper .scratch-zone {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  background: transparent;
+}
+.scratch-area.card-skin-copper .scratch-content {
+  left: 49.4%;
+  top: calc(38.31% - 4px);   /* 图案整体上移 4px */
+  width: 40.87%;
+  height: 40.51%;
+  column-gap: 6px;
+  row-gap: 10px;      /* 在原 3px 基础上累计拉大 7px */
+  padding: 0;
+}
+.scratch-area.card-skin-copper .scratch-content .cell {
+  background: transparent;
+  border: 0;
+}
+/* 铜板卡图案放大（按字号 em 缩放） */
+.scratch-area.card-skin-copper .scratch-content .sym-img {
+  width: 1.3em;
+  height: 1.3em;
+}
+/* 铜板卡图案去掉紫色光晕 */
+.scratch-area.card-skin-copper .scratch-content .cell .sym {
+  filter: none;
+}
+.scratch-area.card-skin-copper .scratch-canvas {
+  border-radius: 0;
+}
+/* 果园卡专属整卡素材（竖版构图，画布正方形） */
+.scratch-area.card-skin-orchard {
+  width: 800px;
+  height: 800px;
+  top: -50px;
+  padding: 0;
+  display: block;
+  gap: 0;
+  border: 0;
+  background: url("./assets/cards/orchard.png?v=2") center / contain no-repeat;
+  box-shadow: none;
+  overflow: visible;
+}
+.scratch-area.card-skin-orchard .card-header {
+  display: none;
+}
+/* 说明放在画布左下角草地空白处（避开中间树冠九宫格与标题） */
+.scratch-area.card-skin-orchard .card-inline-info {
+  position: absolute;
+  left: 25%;               /* 区域宽 50%，居中：(100% - 50%) / 2 */
+  top: calc(68% + 110px);  /* 整个说明区域上移 10px */
+  width: 50%;              /* 加宽，让规则文案单行显示 */
+  height: 19%;
+  z-index: 2;
+  color: #3A6F51;
+  font-family: "FZLTRegular", "FZLTHeavy", sans-serif;
+  font-weight: 700;
+  text-shadow: none;
+  pointer-events: none;
+  overflow: hidden;
+  text-align: center;
+}
+.scratch-area.card-skin-orchard .card-inline-info {
+  display: block;
+}
+.scratch-area.card-skin-orchard .inline-label {
+  margin: 0 0 2px;
+  color: #3A6F51;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.scratch-area.card-skin-orchard .inline-rule {
+  margin: 0 0 4px;
+  color: #3A6F51;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.25;
+  white-space: nowrap;      /* 尽量单行显示 */
+}
+/* 「中奖要求」标题与规则文案：再上移 5px */
+.scratch-area.card-skin-orchard .inline-label,
+.scratch-area.card-skin-orchard .inline-rule {
+  transform: translateY(3px);
+}
+/* 概率列表：两列网格，每格 = 图标 + 概率 + 金额，左对齐 */
+.scratch-area.card-skin-orchard .inline-odds {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  column-gap: 26px;
+  row-gap: 0;        /* 水果说明纵向间距压到 0 */
+  text-align: left;
+  padding-left: 46px;   /* 与区域左边界的间隔加大 */
+}
+.scratch-area.card-skin-orchard .inline-odds li {
+  gap: 8px;
+  line-height: 1;      /* 行高压紧 */
+}
+.scratch-area.card-skin-orchard .od-sym {
+  width: 15px;         /* 图标再缩小，行高随之更矮 */
+  flex: 0 0 15px;
+}
+.scratch-area.card-skin-orchard .od-pct {
+  flex: 0 0 auto;
+  width: auto;
+  color: #3A6F51;
+  font-size: 11px;
+  font-weight: 700;
+}
+.scratch-area.card-skin-orchard .od-pay {
+  margin-left: 0;
+  margin-right: 0;
+  color: #3A6F51;
+  font-size: 10px;
+  font-weight: 700;
+}
+.scratch-area.card-skin-orchard .od-pay.danger {
+  color: #3A6F51;
+}
+/* 刮奖区：刮区图覆盖整卡，图案九宫格对准九个圆格 */
+.scratch-area.card-skin-orchard .scratch-zone {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  background: transparent;
+}
+.scratch-area.card-skin-orchard .scratch-content {
+  left: 29.53%;
+  top: calc(25.78% - 6px);   /* 图案整体下移 2px */
+  width: 41.05%;
+  height: 39.08%;
+  row-gap: 20px;      /* 纵向间距再 -2px（累计 -5px） */
+  column-gap: 6px;    /* 横向间距再 +2px（累计 +6px） */
+  padding: 0;
+}
+.scratch-area.card-skin-orchard .scratch-content .cell {
+  background: transparent;
+  border: 0;
+}
+/* 果园卡图案（按字号 em 缩放） */
+.scratch-area.card-skin-orchard .scratch-content .sym-img {
+  width: 1.2em;
+  height: 1.2em;
+}
+.scratch-area.card-skin-orchard .scratch-canvas {
+  border-radius: 0;
+}
+/* 矿洞卡专属整卡素材 */
+.scratch-area.card-skin-mine {
+  width: 800px;
+  height: 800px;
+  padding: 0;
+  display: block;
+  gap: 0;
+  border: 0;
+  background: url("./assets/cards/mine.png?v=6") center / contain no-repeat;
+  box-shadow: none;
+  overflow: visible;
+}
+.scratch-area.card-skin-mine .card-header {
+  display: none;
+}
+/* 说明放在左侧岩石空白区域 */
+.scratch-area.card-skin-mine .card-inline-info {
+  position: absolute;
+  left: calc(14.5% + 15px);   /* 右移 15px */
+  top: calc(40% + 7px);       /* 整体上移 8px */
+  width: 24%;   /* 区域缩窄 */
+  height: 30%;
+  z-index: 2;
+  color: #525252;
+  font-family: "FZLTRegular", "FZLTHeavy", sans-serif;
+  font-weight: 400;
+  text-shadow: none;
+  pointer-events: none;
+  overflow: hidden;
+  display: block;
+  text-align: center;
+}
+/* 「中奖要求」加粗并在区域内居中 */
+.scratch-area.card-skin-mine .inline-label {
+  color: #525252;
+  font-weight: 700;
+  text-align: center;
+}
+.scratch-area.card-skin-mine .inline-rule {
+  color: #525252;
+  text-align: center;
+}
+.scratch-area.card-skin-mine .od-pct {
+  color: #525252;
+}
+.scratch-area.card-skin-mine .od-bar {
+  background: rgba(82, 82, 82, 0.18);
+}
+.scratch-area.card-skin-mine .od-bar i {
+  background: #525252;
+}
+/* 刮奖区：刮区图覆盖整卡，图案九宫格对准九个方格 */
+.scratch-area.card-skin-mine .scratch-zone {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  background: transparent;
+}
+.scratch-area.card-skin-mine .scratch-content {
+  left: 50.09%;
+  top: 33.24%;
+  width: 38.8%;
+  height: 38.33%;
+  column-gap: 6px;   /* 图案横向间距 +6px */
+  row-gap: 3px;      /* 图案纵向间距 +3px */
+  padding: 0;
+}
+.scratch-area.card-skin-mine .scratch-content .cell {
+  background: transparent;
+  border: 0;
+}
+/* 矿洞卡图案放大（.sym-img 按字号 em 缩放，这里整体放大到 1.45em） */
+.scratch-area.card-skin-mine .scratch-content .sym-img {
+  width: 1.45em;
+  height: 1.45em;
+}
+.scratch-area.card-skin-mine .scratch-canvas {
+  border-radius: 12px;
+}
+/* 赌城卡专属整卡素材 */
+.scratch-area.card-skin-casino {
+  width: 800px;
+  height: 800px;
+  top: -50px;
+  padding: 0;
+  display: block;
+  gap: 0;
+  border: 0;
+  background: url("./assets/cards/casino.png?v=2") center / contain no-repeat;
+  box-shadow: none;
+  overflow: visible;
+}
+.scratch-area.card-skin-casino .card-header {
+  display: none;
+}
+/* 说明放在底部黄色空白区域 */
+.scratch-area.card-skin-casino .card-inline-info {
+  position: absolute;
+  left: calc(18% + 9px);     /* 再整体右移 10px */
+  top: calc(78.5% + 13px);   /* 上移 7px */
+  width: 58%;                /* 区域变窄 */
+  height: 11.5%;
+  z-index: 2;
+  color: #8c1f1f;
+  font-family: "FZLTRegular", "FZLTHeavy", sans-serif;
+  font-weight: 400;
+  text-shadow: none;
+  pointer-events: none;
+  overflow: hidden;
+  display: block;
+}
+.scratch-area.card-skin-casino .inline-label {
+  color: #c72525;
+  font-size: 14px;
+  margin-bottom: 2px;
+  text-align: center;   /* 「中奖要求」在区域中居中 */
+}
+.scratch-area.card-skin-casino .inline-rule {
+  font-size: 10.5px;
+  line-height: 1.18;
+  margin-bottom: 3px;
+  text-align: center;
+}
+.scratch-area.card-skin-casino .inline-odds {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0 44px;   /* 双栏之间的间距再加大 */
+}
+.scratch-area.card-skin-casino .inline-odds li {
+  width: calc(50% - 22px);   /* 与 44px 栏间距配套，两栏仍占满整行 */
+  gap: 2px;             /* 格内间距再压紧 */
+  line-height: 1.1;
+}
+.scratch-area.card-skin-casino .od-sym {
+  width: 18px;          /* 图案略缩小 */
+  flex-basis: 18px;
+  font-size: 14px;
+}
+.scratch-area.card-skin-casino .od-name,
+.scratch-area.card-skin-casino .od-pct,
+.scratch-area.card-skin-casino .od-pay {
+  font-size: 9.5px;     /* 字号略缩小 */
+}
+.scratch-area.card-skin-casino .od-pct {
+  flex: 1;
+  width: auto;
+  flex-basis: auto;
+  color: #8c1f1f;
+}
+.scratch-area.card-skin-casino .od-bar {
+  height: 3px;
+  background: rgba(140, 31, 31, 0.18);
+}
+.scratch-area.card-skin-casino .od-bar i {
+  background: #d8312c;
+}
+/* 刮奖区：刮区图覆盖整卡，图案九宫格对准老虎机 3x3 银灰方格 */
+.scratch-area.card-skin-casino .scratch-zone {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  background: transparent;
+}
+.scratch-area.card-skin-casino .scratch-content {
+  left: 25.35%;
+  top: 33.29%;
+  width: 48.11%;
+  height: 43.19%;
+  column-gap: 0;
+  row-gap: 3px;   /* 图案纵向间距 +3px */
+  padding: 0;
+}
+.scratch-area.card-skin-casino .scratch-content .cell {
+  background: transparent;
+  border: 0;
+}
+/* 赌城卡图案整体放大；「幸运7」单独再放大 */
+.scratch-area.card-skin-casino .scratch-content .sym-img {
+  width: 1.3em;
+  height: 1.3em;
+}
+.scratch-area.card-skin-casino .scratch-content .sym-img[src*="sym_seven"] {
+  width: 1.8em;
+  height: 1.8em;
+}
+.scratch-area.card-skin-casino .scratch-canvas {
+  border-radius: 14px;
+}
+/* 星海卡专属整卡素材 */
+.scratch-area.card-skin-star {
+  width: 800px;
+  height: 800px;
+  padding: 0;
+  display: block;
+  gap: 0;
+  border: 0;
+  background: url("./assets/cards/star.png?v=4") center / contain no-repeat;
+  box-shadow: none;
+  overflow: visible;
+}
+.scratch-area.card-skin-star .card-header {
+  display: none;
+}
+/* 说明放在左下角彗星尾巴空白区域 */
+.scratch-area.card-skin-star .card-inline-info {
+  position: absolute;
+  left: calc(10% + 30px);   /* 整个中奖说明区域右移 30px */
+  top: calc(44% - 10px);   /* 整个说明区域上移 10px */
+  width: 34%;   /* 整体缩窄（原 38%） */
+  height: auto;   /* 高度自适应，避免最下面的图案被裁 */
+  max-height: 30%;
+  z-index: 2;
+  color: #11307A;
+  font-family: "FZLTRegular", "FZLTHeavy", sans-serif;
+  font-weight: 400;
+  text-shadow: none;
+  pointer-events: none;
+  overflow: hidden;
+  display: block;
+}
+.scratch-area.card-skin-star .inline-label {
+  color: #11307A;
+  text-align: center;   /* 「中奖要求」在区域中居中 */
+  transform: translateX(-20px);   /* 再左移 5px（累计 20px） */
+}
+/* 规则文案强制单行，并右移 8px */
+.scratch-area.card-skin-star .inline-rule {
+  white-space: nowrap;
+  transform: translateX(8px);
+}
+/* 图案说明改两列：所有图案都能放进区域，最下面的不再被裁 */
+.scratch-area.card-skin-star .inline-odds {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 10px;
+  row-gap: 2px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+/* 两列后每行更窄，图标与金额说明相应收紧 */
+.scratch-area.card-skin-star .od-sym {
+  width: 22px;
+  flex: 0 0 22px;
+}
+.scratch-area.card-skin-star .od-pay {
+  font-size: 10px;
+}
+.scratch-area.card-skin-star .od-pct {
+  color: #11307A;
+}
+.scratch-area.card-skin-star .od-bar {
+  background: rgba(17, 48, 122, 0.18);
+}
+.scratch-area.card-skin-star .od-bar i {
+  background: #11307A;
+}
+/* 刮奖区：刮区图覆盖整卡，图案九宫格对准九个方格 */
+.scratch-area.card-skin-star .scratch-zone {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  background: transparent;
+}
+.scratch-area.card-skin-star .scratch-content {
+  left: 53.41%;
+  top: calc(34.92% - 2px);   /* 图案整体下移 2px */
+  width: 35.08%;
+  height: 34.54%;
+  column-gap: 3px;   /* 图案左右间距 +3px */
+  row-gap: 8px;   /* 图案纵向间距再 +2px */
+  padding: 0;
+}
+/* 星海卡图案放大（按字号 em 缩放） */
+.scratch-area.card-skin-star .scratch-content .sym-img {
+  width: 1.3em;
+  height: 1.3em;
+}
+.scratch-area.card-skin-star .scratch-content .cell {
+  background: transparent;
+  border: 0;
+}
+.scratch-area.card-skin-star .scratch-canvas {
+  border-radius: 0;
+}
+/* 时空卡专属整卡素材 */
+.scratch-area.card-skin-spacetime {
+  position: relative;
+  top: -60px;   /* 整张卡上移 60px（相对定位，不影响刮卡坐标计算） */
+  width: 800px;
+  height: 800px;
+  padding: 0;
+  display: block;
+  gap: 0;
+  border: 0;
+  background: url("./assets/cards/spacetime.png?v=1") center / contain no-repeat;
+  box-shadow: none;
+  overflow: visible;
+}
+.scratch-area.card-skin-spacetime .card-header {
+  display: none;
+}
+/* 说明放在底部深蓝星空留白区域 */
+.scratch-area.card-skin-spacetime .card-inline-info {
+  position: absolute;
+  left: calc(16% + 95px);   /* 再整体左移 15px（原 +110px） */
+  top: 76.5%;
+  width: 46%;   /* 再加宽一点（42% → 46%） */
+  height: auto;   /* 高度自适应，避免最下面的图案被裁 */
+  max-height: 22%;
+  z-index: 2;
+  color: #FCFCFC;
+  font-family: "FZLTRegular", "FZLTHeavy", sans-serif;
+  font-weight: 400;
+  text-shadow: none;
+  pointer-events: none;
+  overflow: hidden;
+  display: block;
+}
+/* 时空卡：中奖要求下面的具体要求右移 25px（累计 75px） */
+.scratch-area.card-skin-spacetime .inline-rule {
+  transform: translateX(75px);
+}
+/* 时空卡：「中奖要求」四个字在说明区域内居中（概率列表仍左对齐） */
+.scratch-area.card-skin-spacetime .inline-label {
+  color: #FCFCFC;
+  display: block;
+  width: 100%;
+  text-align: center;
+}
+/* 图案说明改两列：五个图案（含雷击）全部显示，不再被裁 */
+.scratch-area.card-skin-spacetime .inline-odds {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 10px;
+  row-gap: 2px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+.scratch-area.card-skin-spacetime .od-sym {
+  width: 22px;
+  flex: 0 0 22px;
+}
+.scratch-area.card-skin-spacetime .od-pay {
+  font-size: 10px;
+}
+.scratch-area.card-skin-spacetime .od-pct {
+  color: #FCFCFC;
+}
+.scratch-area.card-skin-spacetime .od-bar {
+  background: rgba(252, 252, 252, 0.18);
+}
+.scratch-area.card-skin-spacetime .od-bar i {
+  background: #FCFCFC;
+}
+/* 刮奖区：刮层图覆盖整卡，图案九宫格对准九个米白方格 */
+.scratch-area.card-skin-spacetime .scratch-zone {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  background: transparent;
+}
+.scratch-area.card-skin-spacetime .scratch-content {
+  left: 26.52%;
+  top: 26.03%;
+  width: 46.96%;
+  height: 45.5%;
+  gap: 13px;
+  padding: 0;
+}
+.scratch-area.card-skin-spacetime .scratch-content .cell {
+  background: transparent;
+  border: 0;
+}
+.scratch-area.card-skin-spacetime .scratch-canvas {
+  border-radius: 0;
+}
+.scratch-area.card-swap-out {
+  pointer-events: none;
+  animation: cardSwapOut 0.18s ease-in forwards;
+}
+.scratch-area.card-swap-in {
+  pointer-events: none;
+  animation: cardSwapIn 0.26s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes cardSwapOut {
+  0% { opacity: 1; transform: translateX(0) rotate(0deg) scale(1); }
+  100% { opacity: 0; transform: translateX(-115%) rotate(-5deg) scale(0.96); }
+}
+@keyframes cardSwapIn {
+  0% { opacity: 0; transform: translateX(115%) rotate(5deg) scale(0.96); }
+  70% { opacity: 1; transform: translateX(-3%) rotate(-0.6deg) scale(1.01); }
+  100% { opacity: 1; transform: translateX(0) rotate(0deg) scale(1); }
+}
+.scratch-placeholder {
+  color: var(--neon-cyan);
+  font-size: 15px;
+  letter-spacing: 2px;
+  user-select: none;
+  text-shadow: 0 0 10px var(--glow-cyan);
+  animation: pulse 1.8s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+
+/* ===== 页面底部状态条（不占据游戏容器空间） ===== */
+.statusbar {
+  position: fixed;
+  left: 50%;
+  bottom: 22px;
+  transform: translateX(-50%);
+  width: min(920px, calc(100vw - 40px));
+  min-height: 36px;
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 7px 14px 7px 18px;
+  /* 米白纸片风格：与卡面 / 纸片素材统一，去掉原来的深紫底与紫色光晕 */
+  background: rgba(255, 250, 236, 0.92);
+  border: 1px solid rgba(120, 96, 60, 0.32);
+  border-radius: 8px;   /* 原 14px */
+  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b5335;
+}
+.status-msg {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ===== 符号 PNG 素材：刮奖格 / 概率列表 / 实时弹窗 ===== */
+.sym-img {
+  width: 1.05em;
+  height: 1.05em;
+  object-fit: contain;
+  display: inline-block;
+  vertical-align: middle;
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+.card-inline-info .od-sym .sym-img {
+  width: 100%;
+  height: 100%;
+}
+.hit-toast .sym-img {
+  width: 1.15em;
+  height: 1.15em;
+}
+
+/* ===== 调试入口：左下角小扳手（默认半透明低调，悬浮才明显） ===== */
+.debug-btn {
+  position: fixed;
+  left: 12px;
+  bottom: 12px;
+  z-index: 200;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(12, 8, 20, 0.4);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.3;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.debug-btn:hover {
+  opacity: 1;
+  transform: scale(1.12);
+}
+/* 调试面板：解锁全部 / 升一级 / 清档重开 */
+.debug-panel {
+  position: fixed;
+  left: 12px;
+  bottom: 50px;
+  z-index: 200;
+  display: none;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 176px;
+  padding: 10px;
+  border-radius: 12px;
+  background: rgba(18, 15, 36, 0.94);
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+}
+.debug-panel.open { display: flex; }
+.debug-panel-title {
+  margin-bottom: 2px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-align: center;
+  color: var(--text-dim);
+}
+.debug-item {
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.14s ease, border-color 0.14s ease;
+}
+.debug-item:hover {
+  border-color: var(--neon-cyan);
+  background: rgba(0, 240, 255, 0.08);
+}
+.debug-item.danger:hover {
+  border-color: #ff5a6a;
+  background: rgba(255, 90, 106, 0.1);
+}
+
+/* 滚动条美化 */
+.shop-list::-webkit-scrollbar, .tool-list::-webkit-scrollbar { width: 5px; }
+.shop-list::-webkit-scrollbar-thumb, .tool-list::-webkit-scrollbar-thumb {
+  background: var(--neon-purple); border-radius: 3px;
+}
+
+/* ===== 刮卡：卡头 + 刮奖区（底层网格 + 涂层 canvas） ===== */
+/* 卡头：主题画 + 卡名，始终可见 */
+.card-header {
+  height: 66px;
+  flex-shrink: 0;
+  position: relative;
+  border-radius: 11px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+.card-header .ch-art {
+  font-size: 34px;
+  filter: drop-shadow(0 0 8px rgba(0, 0, 0, 0.5));
+  z-index: 1;
+}
+.card-header .ch-art.card-art-img {
+  width: 44px;
+  height: 44px;
+}
+.card-header .ch-meta { z-index: 1; line-height: 1.25; }
+.card-header .ch-name {
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #fff;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+}
+.card-header .ch-sub {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.8);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+/* 卡头装饰光斑 */
+.card-header::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.25), transparent 60%);
+}
+
+/* 刮奖区：正方形，与卡头共同填满整张卡 */
+.scratch-zone {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;   /* 保证刮奖区为正方形，网格不被拉成长方形 */
+  border-radius: 11px;
+  overflow: hidden;
+  background: #0d0a1c;
+}
+
+/* 底层符号网格：铺满刮奖区、图案放大、填充感强 */
+.scratch-content {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  gap: 6px;
+  padding: 6px;
+  user-select: none;
+}
+.scratch-content .cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;    /* 关键：grid 项默认 min-height:auto，图案放大会撑高轨道导致整体下移 */
+  overflow: visible;
+  border-radius: 9px;
+  background: linear-gradient(135deg, rgba(157, 75, 255, 0.12), rgba(0, 240, 255, 0.08));
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 13vw;        /* 由 JS 按格子尺寸覆盖，确保放大填满 */
+  line-height: 1;
+}
+.scratch-content .cell .sym {
+  transform: scale(0.6);
+  opacity: 0;
+  filter: none;   /* 去掉图案后面的紫色发光光晕 */
+}
+/* 单格揭晓：该图案单独弹出 */
+.scratch-content .cell .sym.pop {
+  animation: symPop 0.42s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+@keyframes symPop {
+  0%   { transform: scale(0.5); opacity: 0; }
+  60%  { transform: scale(1.18); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.scratch-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
+  border-radius: 11px;
+}
+.scratch-canvas:active { cursor: grabbing; }
+.scratch-canvas.done { pointer-events: none; }
+
+/* ===== 步骤4：结算浮层 ===== */
+.result-toast {
+  position: absolute;
+  left: 50%;
+  top: calc(33% - 90px);    /* 再上移 30px（累计 90px） */
+  transform: translate(-50%, -50%) scale(0.6);
+  z-index: 10;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  max-width: 90%;
+  min-width: 460px;
+  padding: 34px 64px 40px 56px; /* 文字相对底图下移 6px，落在横幅橙色带内 */
+  font-weight: 900;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  background: url("./assets/icons/result_toast.png?v=2") center / 100% 100% no-repeat;
+  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.35));
+  animation: resultPop 2.2s cubic-bezier(0.22, 1.2, 0.4, 1) forwards;
+}
+.result-toast .rt-head { font-size: 32px; line-height: 1; }
+.result-toast .rt-detail {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.4;
+  white-space: normal;
+  text-align: center;
+  opacity: 0.92;
+}
+/* 橙色横幅上使用白字 + 深橙投影保证可读 */
+.result-toast.win { color: #fff; text-shadow: 0 2px 3px rgba(122, 40, 0, 0.6); }
+.result-toast.lose { color: #fff; text-shadow: 0 2px 3px rgba(122, 40, 0, 0.6); }
+.result-toast.neutral { color: #fff; opacity: 0.95; text-shadow: 0 2px 3px rgba(122, 40, 0, 0.6); }
+@keyframes resultPop {
+  0%   { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+  18%  { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
+  32%  { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  80%  { transform: translate(-50%, -58%) scale(1); opacity: 1; }
+  100% { transform: translate(-50%, -78%) scale(0.9); opacity: 0; }
+}
+
+/* 刮出坏图案的即时负反馈提示（如「塌方！」） */
+.hit-toast {
+  position: absolute;
+  left: 50%;
+  top: 44%;
+  z-index: 11;
+  pointer-events: none;
+  padding: 5px 14px;
+  border-radius: 12px;
+  font-size: 17px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  background: rgba(8, 6, 18, 0.88);
+  animation: hitToast 0.95s ease-out forwards;
+}
+/* 枯叶 / 炸弹等负反馈：与实时金额同一套效果，改用深色渐变 */
+.hit-toast.bad {
+  padding: 0 2px;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  text-shadow: none;
+  font-size: 38px;
+  font-style: italic;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 0;
+  background-image: linear-gradient(180deg, #8c4038 0%, #4a1a18 50%, #2a0d0c 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  filter:
+    drop-shadow(0 0 5px rgba(74, 26, 24, 0.45))
+    drop-shadow(0 2px 3px rgba(0, 0, 0, 0.22));
+}
+/* 实时中奖金额小提示：无底图，黄橙渐变斜体大数字 + 橙色发光 */
+.hit-toast.good {
+  padding: 0 2px;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  text-shadow: none;
+  font-size: 42px;
+  font-style: italic;
+  letter-spacing: 1px;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 0;
+  background-image: linear-gradient(180deg, #fff3a0 0%, #ffd23c 45%, #ff9d00 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  filter:
+    drop-shadow(0 0 6px rgba(255, 150, 0, 0.9))
+    drop-shadow(0 3px 4px rgba(150, 62, 0, 0.5));
+}
+@keyframes hitToast {
+  0%   { opacity: 0; transform: translate(-50%, 8px) scale(0.7); }
+  18%  { opacity: 1; transform: translate(-50%, 0) scale(1.14); }
+  32%  { transform: translate(-50%, 0) scale(1); }
+  72%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -14px) scale(0.95); }
+}
+
+/* ===== 页面顶部下方：增益提示条（不占据游戏容器空间） ===== */
+.perk-bar {
+  /* 与等级进度条同一套定位/宽度：整体居中 980px，内容从左端排 → 视觉上与进度条左对齐 */
+  position: fixed;
+  left: 50%;
+  top: 86px;
+  transform: translateX(-50%);
+  z-index: 40;   /* 低于弹窗（50/58），避免放大的徽章盖住三选一卡片 */
+  width: 980px;
+  max-width: calc(100vw - 120px);
+  min-width: 560px;
+  min-height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  padding: 2px 0 0;
+  flex-wrap: wrap;
+  pointer-events: none;
+}
+/* 增益图片图标（三选一弹窗与顶部徽章共用；状态栏文字仍用 emoji） */
+.perk-sym-img {
+  display: inline-block;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+.perk-sym-fortune    { background-image: url("./assets/icons/perk_icon_fortune.png?v=2"); }
+.perk-sym-thrifty    { background-image: url("./assets/icons/perk_icon_thrifty.png?v=2"); }
+.perk-sym-safety     { background-image: url("./assets/icons/perk_icon_safety.png?v=2"); }
+.perk-sym-jackpot2   { background-image: url("./assets/icons/perk_icon_jackpot2.png?v=2"); }
+.perk-sym-firstDouble{ background-image: url("./assets/icons/perk_icon_firstDouble.png?v=2"); }
+.perk-sym-amulet     { background-image: url("./assets/icons/perk_icon_amulet.png?v=2"); }
+.perk-sym-combo      { background-image: url("./assets/icons/perk_icon_combo.png?v=2"); }
+.perk-sym-treasure   { background-image: url("./assets/icons/perk_icon_treasure.png?v=2"); }
+.perk-sym-burst      { background-image: url("./assets/icons/perk_icon_burst.png?v=2"); }
+.perk-sym-rebate     { background-image: url("./assets/icons/perk_icon_rebate.png?v=2"); }
+/* 弹窗里的图标盒：固定 96×96，不再被 flex 拉伸到整个图标区
+   （否则竖长图 contain 后会撑满整个区域高度，溢出到下方说明区） */
+.perk-icon.perk-sym-img {
+  flex: 0 0 auto;
+  width: 118px;
+  height: 118px;
+  align-self: center;
+  margin: auto 0;    /* 在标题区与说明区之间垂直居中，四周留出呼吸空间 */
+  transform: none;   /* 位移是给 emoji 盒调的，图片盒不需要 */
+}
+/* 护身符为竖长图（504×1066），再缩小一档 */
+.perk-icon.perk-sym-amulet { width: 122px; height: 122px; }
+/* 徽章里的图片只画在内容区（避开底部数字区） */
+.perk-chip-sym.perk-sym-img {
+  background-origin: content-box;
+  background-clip: content-box;
+}
+
+/* 增益徽章：圆形黄色底板，上层图标 / 下层叠加层数 */
+.perk-chip {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  width: 84px;
+  height: 84px;
+  padding: 0;
+  font-size: 30px;
+  line-height: 1;
+  border-radius: 50%;
+  background: url("./assets/icons/perk_badge.png?v=1") center / 100% 100% no-repeat;
+  border: 0;
+  cursor: default;
+  filter: none;   /* 去掉投影 */
+  pointer-events: auto;   /* 增益条整体不拦截事件，但徽章需要悬浮 */
+}
+/* 悬浮显示该增益的效果说明 */
+.perk-tip {
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 8px);
+  transform: translateX(-50%);
+  z-index: 130;
+  display: block;
+  width: max-content;
+  max-width: 240px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  /* 与界面下方提示框同款米白纸片底 */
+  background: rgba(255, 250, 236, 0.96);
+  border: 1px solid rgba(120, 96, 60, 0.32);
+  box-shadow: none;   /* 与增益圆形徽章一致（徽章为 filter: none，无投影） */
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+  text-align: center;
+  color: #6b5335;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.14s ease;
+}
+.perk-chip:hover .perk-tip { opacity: 1; visibility: visible; }
+.perk-tip b {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #3a2c12;
+}
+.perk-tip-desc { color: #7a6547; }
+/* 图标区：米白盘面中部（略微上移，给下方数字留位） */
+.perk-chip-sym {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 19px 20px 29px;   /* 图标再缩小一点，并整体上移 3px */
+  font-size: 30px;
+  line-height: 1;
+}
+/* 数字区：米白盘面下方（内圈 12.3%~89.7%，数字压在下半部） */
+.perk-chip-num {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 15%;
+  font-style: normal;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1;
+  text-align: center;
+  color: #7a5800;
+}
+
+/* ===== 步骤5：升级三选一弹窗 ===== */
+.perk-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(6, 5, 16, 0.74);
+  backdrop-filter: blur(4px);
+  animation: perkFade 0.22s ease;
+}
+@keyframes perkFade { from { opacity: 0; } to { opacity: 1; } }
+.perk-modal {
+  width: 560px;
+  max-width: 92vw;
+  padding: 22px 24px 26px;
+  border-radius: 18px;
+  background: linear-gradient(160deg, var(--panel-2), var(--panel));
+  border: 1px solid var(--neon-purple);
+  box-shadow: 0 0 42px var(--glow-purple), inset 0 0 22px rgba(157, 75, 255, 0.12);
+}
+/* 三选一：去掉紫色大面板与标题，只保留三张卡片 */
+.perk-modal.perk-choice-modal {
+  width: auto;
+  max-width: none;
+  padding: 0;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+.perk-choice-modal .perk-head { display: none; }
+.perk-choice-modal .perk-cards {
+  width: 700px;
+  max-width: 94vw;
+  gap: 20px;
+}
+.perk-head {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--neon-gold);
+  text-shadow: 0 0 14px rgba(255, 210, 60, 0.5);
+}
+.perk-more {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-dim);
+  padding: 2px 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  text-shadow: none;
+}
+.perk-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+/* 三选一卡片：纸片背景，上=标题区（黄带） / 中=图标区（米白） / 下=文字说明区（深黑） */
+.perk-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  padding: 0;
+  aspect-ratio: 750 / 1122;
+  border: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: url("./assets/icons/perk_card.png?v=1") center / 100% 100% no-repeat;
+  color: var(--text);
+  cursor: pointer;
+  transition: transform 0.14s ease, filter 0.14s ease;
+}
+.perk-card:hover {
+  transform: translateY(-6px);
+  filter: drop-shadow(0 0 8px rgba(255, 190, 40, 0.9)) drop-shadow(0 0 22px rgba(255, 140, 0, 0.55));
+}
+/* 标题区：黄色纸带（约上半 13.5%） */
+.perk-cname {
+  order: 0;
+  flex: 0 0 13.5%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 800;
+  color: #4a3600;
+  text-shadow: none;
+}
+.perk-cname em { font-style: normal; font-size: 13px; color: #8a6a00; }
+/* 图标区：米白纸面（约 61.5%），对齐到盘面正中 */
+.perk-icon {
+  order: 1;
+  flex: 1 1 auto;
+  align-self: center;          /* 水平居中（卡片是 stretch，固定宽度后会贴左） */
+  transform: translateY(3.6%); /* 对齐盘面中心后再整体上移 15px */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 52px;
+  line-height: 1;
+}
+/* 文字说明区：深黑区（约 25%） */
+.perk-cdesc {
+  order: 2;
+  flex: 0 0 25%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 22px 18px;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: #ddd6c8;
+  text-align: center;
+}
+.tool-unlock-overlay { z-index: 58; }
+/* 获得新刮具弹窗：纸片拼贴底图（上=黄纸带标题区 / 中=米白内框图标区 / 右下=黑笔刷按钮区） */
+.tool-unlock-modal {
+  position: relative;   /* 按钮按原画布坐标绝对定位，与底图同一比例 */
+  width: 420px;
+  height: 420px;
+  padding: 0;
+  background: url("./assets/icons/tool_unlock_bg.png?v=2") center / 100% 100% no-repeat;
+  border: 0;
+  border-radius: 0;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+/* 手绘底纹层：两张图与底图同为 623×623 画布，直接铺满弹窗即天然对齐 */
+.tool-unlock-deco {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+.tool-unlock-deco-title { background-image: url("./assets/icons/tool_unlock_title_deco.png?v=1"); }
+.tool-unlock-deco-text { background-image: url("./assets/icons/tool_unlock_text_deco.png?v=1"); }
+/* 刮具图片层：与底图同画布，铺满弹窗即对齐 */
+.tool-unlock-icon-shell   { background-image: url("./assets/icons/tool_unlock_icon_shell.png?v=1"); }
+.tool-unlock-icon-clover  { background-image: url("./assets/icons/tool_unlock_icon_clover.png?v=1"); }
+.tool-unlock-icon-crystal { background-image: url("./assets/icons/tool_unlock_icon_crystal.png?v=1"); }
+.tool-unlock-icon-drill   { background-image: url("./assets/icons/tool_unlock_icon_drill.png?v=1"); }
+/* 有图片素材时隐藏 emoji，但保留其占位高度 */
+.tool-unlock-icon.is-hidden { visibility: hidden; }
+.tool-unlock-modal .perk-head,
+.tool-unlock-card,
+.tool-unlock-ok { position: relative; z-index: 1; }
+
+/* 标题区：压在标题底纹上（底纹笔画 y 7.1%~18.6%，中心约 12.8%） */
+.tool-unlock-modal .perk-head {
+  margin: 38px 0 0;
+  font-size: 21px;
+  color: #4a3600;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+/* 图标 / 名称 / 说明：米白内框区（约 24%~73%） */
+.tool-unlock-card {
+  margin-top: 80px;   /* 让名称+特点文字落在文字底纹上（底纹笔画 y 52.6%~61%） */
+  padding: 0;
+  background: none;
+  border: 0;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.tool-unlock-icon {
+  font-size: 64px;
+  line-height: 1;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.25));
+}
+.tool-unlock-name {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 20px;
+  font-weight: 900;
+  color: #3a2c12;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+.tool-unlock-name em {
+  font-style: normal;
+  font-size: 13px;
+  color: #8a6a00;
+}
+.tool-unlock-desc {
+  max-width: 72%;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #6b5335;
+}
+/* 知道了按钮：按钮素材在原 623×623 画布中的位置是
+   x 211..415 / y 462..564，换算成百分比后按同一比例定位，与底图天然对齐 */
+.tool-unlock-ok {
+  position: absolute;
+  left: 33.87%;      /* 211 / 623 */
+  top: 74.16%;       /* 462 / 623 */
+  width: 32.74%;     /* 204 / 623 */
+  height: 16.37%;    /* 102 / 623 */
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: url("./assets/icons/tool_unlock_btn.png?v=2") center / 100% 100% no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #00FDFE;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  cursor: pointer;
+  text-shadow: 0 0 8px rgba(0, 253, 254, 0.55);
+}
+.tool-unlock-ok:hover {
+  filter: brightness(1.25) drop-shadow(0 0 10px rgba(0, 253, 254, 0.65));
+}
+
+/* 响应式：舞台单元由 fitStage() 统一计算缩放与居中，这里不再单独缩放 .game */
+
+/* =========================================================
+ * 中奖全屏特效层（覆盖全屏，不拦截交互）
+ * ========================================================= */
+.fx-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* 全屏闪光 */
+.fx-flash {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  animation-name: fxFlash;
+  animation-timing-function: ease-out;
+  animation-fill-mode: forwards;
+}
+@keyframes fxFlash {
+  0%   { opacity: 0; }
+  12%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* 径向光晕脉冲 */
+.fx-glow {
+  position: absolute;
+  inset: -20%;
+  background: radial-gradient(circle at 50% 50%, var(--fx-glow-color, rgba(255,210,60,0.7)), transparent 62%);
+  opacity: 0;
+  animation-name: fxGlow;
+  animation-timing-function: ease-out;
+  animation-fill-mode: forwards;
+}
+@keyframes fxGlow {
+  0%   { opacity: 0; transform: scale(0.6); }
+  22%  { opacity: 1; transform: scale(1.05); }
+  100% { opacity: 0; transform: scale(1.25); }
+}
+
+/* 彩纸 */
+.fx-confetti {
+  position: absolute;
+  top: -6%;
+  display: block;
+  border-radius: 2px;
+  opacity: 0;
+  will-change: transform, opacity;
+  animation-name: fxConfetti;
+  animation-timing-function: cubic-bezier(0.25, 0.6, 0.4, 1);
+  animation-fill-mode: forwards;
+}
+@keyframes fxConfetti {
+  0%   { opacity: 0; transform: translate(0, 0) rotate(0deg); }
+  8%   { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--fx-drift, 0), 112vh) rotate(var(--fx-spin, 360deg)); }
+}
+
+/* 旋转光柱（巨奖） */
+.fx-rays {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 240vmax;
+  height: 240vmax;
+  transform: translate(-50%, -50%) rotate(0deg);
+  opacity: 0;
+  background: repeating-conic-gradient(
+    from 0deg at 50% 50%,
+    rgba(255, 210, 60, 0.22) 0deg 7deg,
+    transparent 7deg 18deg
+  );
+  animation-name: fxRays;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+@keyframes fxRays {
+  0%   { opacity: 0; transform: translate(-50%, -50%) rotate(0deg); }
+  16%  { opacity: 1; }
+  84%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -50%) rotate(120deg); }
+}
+
+/* 巨奖横幅 */
+.fx-banner {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  transform: translate(-50%, -50%) scale(0.4);
+  font-size: 52px;            /* 字号保持原样，只放大底图 */
+  font-weight: 900;
+  letter-spacing: 2px;
+  white-space: nowrap;
+  width: 1080px;              /* 原 880px：底图整体放大约 23% */
+  aspect-ratio: 2466 / 338;   /* 与素材原始比例一致（2466×338），绝不拉伸 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0 12px;   /* 文字相对底板上移 6px */
+  background: url("./assets/icons/jackpot_banner.png?v=1") center / contain no-repeat;
+  filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.4));
+  color: #fff;
+  text-shadow: none;
+  opacity: 0;
+  animation: fxBanner 2200ms cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
+}
+@keyframes fxBanner {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.4) rotate(-6deg); }
+  14%  { opacity: 1; transform: translate(-50%, -50%) scale(1.15) rotate(2deg); }
+  24%  { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+  78%  { opacity: 1; transform: translate(-50%, -54%) scale(1.02); }
+  100% { opacity: 0; transform: translate(-50%, -72%) scale(0.95); }
+}
+
+/* 无障碍：尊重「减少动态效果」偏好 */
+@media (prefers-reduced-motion: reduce) {
+  .fx-layer { display: none; }
+}

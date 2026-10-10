@@ -1,0 +1,305 @@
+{
+  "$comment": "幸运刮刮乐 Roguelike 复刻规格（机器可读）。所有数值为运行时实测/源码提取的最终值，单位 px（自然尺寸，未缩放）或百分比字符串。缩放时整体乘 k。",
+  "meta": {
+    "title": "幸运刮刮乐 · Roguelike",
+    "source": "web/index.html + web/style.css + web/game.js",
+    "target": "platform-agnostic",
+    "scope": ["ui", "interaction", "logic"],
+    "companion": ["REPLICA_SPEC.md", "assets-manifest.json", "assets.zip"]
+  },
+
+  "tokens": {
+    "colors": {
+      "text": "#d8d4f0",
+      "textDim": "#8983b5",
+      "neonGold": "#ffd23c",
+      "neonCyan": "#00f0ff",
+      "neonLime": "#b6ff3c",
+      "scoreValue": "#ffc42e",
+      "statusbarBg": "rgba(255,250,236,0.92)",
+      "statusbarBorder": "rgba(120,96,60,0.32)",
+      "statusbarText": "#6b5335",
+      "paperTitleDark": "#3a2c12",
+      "paperTitleGold": "#4a3600",
+      "overlayMask": "rgba(6,5,16,0.74)",
+      "slotPriceText": "#0a0816",
+      "slotPriceBg": "#ffd23c"
+    },
+    "fonts": {
+      "stack": ["FZLTRegular", "FZLTHeavy", "PingFang SC", "Microsoft YaHei", "Segoe UI", "sans-serif"],
+      "note": "FZLT* 为商业字体，复刻需确认授权，可用思源黑体/苹方替代"
+    },
+    "radius": { "statusbar": 8, "perkCard": 10, "perkTip": 8, "debugPanel": 12, "toolUnlockModal": 0, "levelBar": 14, "pricePill": 999 },
+    "zIndex": { "perkOverlay": 50, "toolUnlockOverlay": 58, "topbar": 120, "statusbar": 120, "debug": 200, "cardInlineInfo": 2 }
+  },
+
+  "adaptive": {
+    "hudBoundary": {
+      "description": "顶栏三列栅格；两侧 1fr 同下限 → 等级条居中且与得分不重叠",
+      "hudSide": "scoreControlWidth + 24",
+      "hudSideMeasured": 173,
+      "narrowBreakpoint": 720,
+      "narrow": { "hudSideMin": 128, "scoreLabelFont": 20, "coinValueFont": 28 }
+    },
+    "stage": {
+      "natural": { "w": 920, "h": 952 },
+      "formulas": {
+        "topOcc": "max(topbar.bottom, perkBar.bottom)",
+        "botOcc": "vh - statusbar.top",
+        "availH": "vh - topOcc - botOcc - 32",
+        "reserve": "min(scaledToolsW + 50 + 24, vw * 0.28)",
+        "availW": "vw - 2 * reserve",
+        "k": "min(1, availH / 952, availW / 920)",
+        "offsetY": "(topOcc - botOcc) / 2",
+        "transform": "translateY(offsetY) scale(k)",
+        "transformOrigin": "center"
+      },
+      "reference": [
+        { "viewport": [1600, 1000], "k": 0.84, "kTools": 1, "stageTopBottom": [131, 931], "toolsTopBottom": [230, 822], "gap": 286 },
+        { "viewport": [1258, 900], "k": 0.735, "kTools": 1, "stageTopBottom": [130, 899], "toolsTopBottom": [180, 772], "gap": 157 },
+        { "viewport": [1258, 700], "k": 0.525, "kTools": 0.845, "stageTopBottom": [126, 626], "toolsTopBottom": [126, 626], "gap": 251 },
+        { "viewport": [900, 600], "k": 0.42, "kTools": 0.372, "stageTopBottom": [126, 526], "toolsTopBottom": [126, 346], "gap": 220 },
+        { "viewport": [640, 480], "k": 0.294, "kTools": 0.473, "stageTopBottom": [128, 406], "toolsTopBottom": [126, 406], "gap": 58 }
+      ]
+    },
+    "tools": {
+      "natural": { "w": 128, "h": 592 },
+      "right": 50,
+      "formulas": {
+        "k": "min(1, availH / 592, (vw * 0.28) / 128)",
+        "top": "safeCenter - 592 / 2",
+        "safeCenter": "(topOcc + (vh - botOcc)) / 2"
+      }
+    }
+  },
+
+  "elements": {
+    "topbar": { "pos": "fixed", "x": 20, "y": 18, "w": "vw-40", "h": 56, "layout": "grid 3 cols: [1fr>=hudSide][980][1fr>=hudSide]", "z": 120 },
+    "scoreControl": { "w": 149, "h": 56, "justifySelf": "start", "width": "max-content" },
+    "scoreLabel": { "fontSize": 26, "fontWeight": 800, "color": "#ffffff", "text": "得分：" },
+    "coinValue": { "fontSize": 36, "fontWeight": 900, "italic": true, "color": "#ffc42e", "filter": "drop-shadow(0 0 6px rgba(255,150,0,.9)) drop-shadow(0 0 14px rgba(255,120,0,.5))" },
+    "perkBar": { "y": 86, "w": 980, "minH": 24, "centered": true },
+    "levelBox": { "w": 980, "h": 56 },
+    "levelLabel": { "h": 29, "fontSize": 20, "fontWeight": 800, "color": "#ffd23c", "justify": "space-between" },
+    "levelBar": { "h": 20, "bg": "rgba(10,8,20,0.45)", "radius": 14, "border": "2px solid rgba(10,8,20,0.25)" },
+    "levelFill": { "gradient": "linear-gradient(90deg,#ffe08a 0%,#ffc42e 55%,#ff9d00 100%)", "radius": 10, "glow": "0 0 14px rgba(255,150,0,.75)" },
+    "perkChip": { "w": 84, "h": 84, "radius": "50%", "bg": "assets/icons/perk_badge.png" },
+    "perkChipSym": { "padding": "18px 20px 29px", "contentBox": [44, 36], "backgroundClip": "content-box", "backgroundOrigin": "content-box" },
+    "perkChipNum": { "bottom": "15%", "fontSize": 14, "fontWeight": 800, "color": "#7a5800" },
+    "perkTip": { "top": "calc(100% + 8px)", "maxW": 240, "padding": "8px 10px", "radius": 8, "bg": "rgba(255,250,236,0.96)", "border": "1px solid rgba(120,96,60,0.32)", "shadow": "none", "color": "#6b5335", "titleColor": "#3a2c12", "descColor": "#7a6547" },
+    "game": { "w": 920, "h": 952, "gap": 20, "flexDirection": "column", "alignItems": "center" },
+    "scratchArea": { "w": 800, "h": 800 },
+    "cardDock": { "w": 812, "h": 120, "gap": 18 },
+    "cardSlot": { "w": 120, "h": 120, "padding": "18px 12px 16px", "gap": 6, "bg": "assets/icons/slot_square.png", "bgHover": "assets/icons/slot_square_hover.png" },
+    "cardSlotArt": { "w": 46, "h": 46, "filter": "drop-shadow(0 0 8px rgba(0,0,0,.5))" },
+    "cardName": { "fontSize": 13, "fontWeight": 900, "color": "#ffffff", "ellipsis": true },
+    "cardPrice": { "fontSize": 12, "fontWeight": 700, "color": "#0a0816", "bg": "#ffd23c", "radius": 999, "padding": "3px 8px" },
+    "cardSlotLocked": { "filter": "grayscale(0.85) brightness(0.6)", "opacity": 0.5, "cursor": "not-allowed", "hover": "保持灰暗，不换 hover 底图" },
+    "cardSlotEmpty": { "opacity": 0.45, "pointerEvents": "none" },
+    "pageBtn": { "w": 48, "h": 48, "bg": "assets/icons/page_btn.png", "fontSize": 18, "color": "#1a1a1a", "disabledOpacity": 0.25 },
+    "toolDock": { "w": 128, "h": 592, "right": 50, "padding": "10px 8px" },
+    "toolItem": { "w": 92, "h": 92, "padding": 8, "gap": 3, "bg": "assets/icons/tool_frame.png", "position": "relative" },
+    "toolIcons": { "coin": [75, 75], "shell": [60, 60], "clover": [60, 60], "crystal": [60, 60], "drill": [60, 60] },
+    "toolBadge": { "position": "absolute", "bottom": 3, "left": 0, "right": 0, "textAlign": "center", "fontSize": 11 },
+    "toolKeyBtn": { "w": 48, "h": 48, "bg": "assets/icons/page_btn.png" },
+    "statusbar": { "bottom": 22, "w": 920, "minH": 36, "padding": "7px 14px 7px 18px", "radius": 8, "bg": "rgba(255,250,236,0.92)", "border": "1px solid rgba(120,96,60,0.32)", "shadow": "0 3px 7px rgba(0,0,0,.15), inset 0 1px 0 rgba(255,255,255,.6)", "fontSize": 12, "fontWeight": 600, "color": "#6b5335", "z": 120 },
+    "statusMsg": { "ellipsis": true, "nowrap": true },
+    "debugBtn": { "x": 12, "y": "bottom 12", "w": 30, "h": 30, "radius": "50%", "bg": "rgba(12,8,20,0.4)", "opacity": 0.3, "hoverOpacity": 1, "z": 200 },
+    "debugPanel": { "bottom": 50, "left": 12, "minW": 176, "bg": "rgba(18,15,36,0.94)", "border": "1px solid #2a2450", "radius": 12, "shadow": "0 10px 28px rgba(0,0,0,.45)", "gap": 6, "padding": 10, "z": 200 },
+    "perkChoiceModal": { "cardsWidth": 700, "gap": 20, "cardW": 220, "cardH": 329, "aspect": "750/1122", "bg": "assets/icons/perk_card.png", "radius": 10 },
+    "perkCardZones": { "title": "13.5%", "icon": "61.5%", "desc": "25%" },
+    "perkIcon": { "w": 118, "h": 118, "amulet": [122, 122], "alignSelf": "center", "margin": "auto 0", "transform": "none" },
+    "perkCardName": { "fontSize": 18, "fontWeight": 800, "color": "#4a3600" },
+    "perkCardDesc": { "fontSize": 13.5, "color": "#ddd6c8", "padding": "6px 22px 18px" },
+    "perkCardHover": { "translateY": -6, "filter": "drop-shadow(0 0 8px rgba(255,190,40,.9)) drop-shadow(0 0 22px rgba(255,140,0,.55))" },
+    "toolUnlockModal": { "w": 420, "h": 420, "bg": "assets/icons/tool_unlock_bg.png", "shadow": "0 18px 40px rgba(0,0,0,.45)" },
+    "toolUnlockDeco": { "title": "assets/icons/tool_unlock_title_deco.png", "text": "assets/icons/tool_unlock_text_deco.png", "size": "100% x 100% (铺满弹窗)", "z": 0 },
+    "toolUnlockIconLayer": { "shell": "tool_unlock_icon_shell.png", "clover": "tool_unlock_icon_clover.png", "crystal": "tool_unlock_icon_crystal.png", "drill": "tool_unlock_icon_drill.png", "emojiHiddenWhenImage": true },
+    "toolUnlockHead": { "marginTop": 38, "fontSize": 21, "color": "#4a3600" },
+    "toolUnlockCard": { "marginTop": 80, "gap": 8 },
+    "toolUnlockName": { "fontSize": 20, "fontWeight": 900, "color": "#3a2c12" },
+    "toolUnlockDesc": { "fontSize": 12.5, "color": "#6b5335", "maxWidth": "72%" },
+    "toolUnlockOk": { "left": "33.87%", "top": "74.16%", "w": "32.74%", "h": "16.37%", "bg": "assets/icons/tool_unlock_btn.png", "color": "#00FDFE", "fontSize": 15, "fontWeight": 800, "letterSpacing": 2 },
+    "jackpotBanner": { "w": 1080, "aspect": "2466/338", "fontSize": 52, "fontWeight": 900, "top": "42%", "bg": "assets/icons/jackpot_banner.png", "durationMs": 2200, "keyframes": "fxBanner" }
+  },
+
+  "cards": [
+    {
+      "id": "copper", "name": "铜板卡", "price": 10, "skin": "copper", "art": "assets/cards/copper.png",
+      "coat": "assets/cards/copper_scratch.png",
+      "coatGrid": { "x": 0.494, "y": 0.3831, "w": 0.4087, "h": 0.4051 },
+      "scratchGrid": { "x": 0.494, "y": 0.3831, "w": 0.4087, "h": 0.4051 },
+      "grid": { "rows": 3, "cols": 3 },
+      "rule": "刮出三个相同图案即可获胜！",
+      "kind": "match",
+      "pool": [
+        { "s": "coin", "img": "assets/cards/sym_coin.png", "w": 45, "label": "铜板", "pay": "+6", "face": 6 },
+        { "s": "yuanbao", "img": "assets/cards/sym_yuanbao.png", "w": 35, "label": "元宝", "pay": "+12", "face": 12 },
+        { "s": "hulu", "img": "assets/cards/sym_hulu.png", "w": 18, "label": "葫芦", "pay": "+30", "face": 30 },
+        { "s": "hongbao", "img": "assets/cards/sym_hongbao.png", "w": 2, "label": "红包", "pay": "+120", "face": 120 }
+      ],
+      "inlineInfo": { "left": "calc(10.5% + 30px)", "top": "calc(40.5% + 10px)", "w": "27%", "h": "31%" }
+    },
+    {
+      "id": "orchard", "name": "果园卡", "price": 25, "skin": "orchard", "art": "assets/cards/orchard.png",
+      "coat": "assets/cards/orchard_scratch.png",
+      "coatGrid": { "x": 0.2953, "y": 0.2578, "w": 0.4105, "h": 0.3908 },
+      "scratchGrid": { "x": 0.2953, "y": 0.2578, "w": 0.4105, "h": 0.3908 },
+      "rule": "全刮出水果获胜！小心枯叶！", "kind": "collect",
+      "pool": [
+        { "s": "apple", "img": "assets/cards/sym_apple.png", "w": 21, "label": "苹果", "pay": "集齐 +112" },
+        { "s": "orange", "img": "assets/cards/sym_orange.png", "w": 21, "label": "橘子", "pay": "集齐 +112" },
+        { "s": "grape", "img": "assets/cards/sym_grape.png", "w": 20, "label": "葡萄", "pay": "集齐 +112" },
+        { "s": "strawberry", "img": "assets/cards/sym_strawberry.png", "w": 20, "label": "草莓", "pay": "集齐 +112" },
+        { "s": "leaf", "img": "assets/cards/sym_leaf.png", "w": 18, "label": "枯叶", "pay": "破坏全水果", "bad": true }
+      ],
+      "prize": { "bad": "leaf", "allPrize": 112, "tiers": { "3": 15, "4": 35, "5": 45, "6": 60, "7": 60, "8": 60, "9": 60 } },
+      "inlineInfo": { "left": "25%", "top": "calc(68% + 110px)", "w": "50%", "h": "19%" }
+    },
+    {
+      "id": "mine", "name": "矿洞卡", "price": 60, "skin": "mine", "art": "assets/cards/mine.png",
+      "coat": "assets/cards/mine_scratch.png",
+      "coatGrid": { "x": 0.5006, "y": 0.3297, "w": 0.389, "h": 0.3872 },
+      "scratchGrid": { "x": 0.5009, "y": 0.3324, "w": 0.388, "h": 0.3833 },
+      "rule": "全刮出矿石获得头奖！刮出同种矿石 3/4/5/6+ 个获得 +16/+42/+95/+205。小心炸弹！", "kind": "collect",
+      "pool": [
+        { "s": "iron", "img": "assets/cards/sym_iron.png", "w": 28, "label": "铁矿", "pay": "全矿石 +450" },
+        { "s": "gold", "img": "assets/cards/sym_gold.png", "w": 27, "label": "金矿", "pay": "全矿石 +450" },
+        { "s": "diamond", "img": "assets/cards/sym_diamond.png", "w": 25, "label": "钻石", "pay": "全矿石 +450" },
+        { "s": "bomb", "img": "assets/cards/sym_bomb.png", "w": 20, "label": "炸弹", "pay": "每个 -20", "bad": true }
+      ],
+      "prize": { "bad": "bomb", "allPrize": 450, "tiers": { "3": 16, "4": 42, "5": 95, "6": 205, "7": 205, "8": 205, "9": 205 } },
+      "inlineInfo": { "left": "calc(14.5% + 15px)", "top": "calc(40% + 7px)", "w": "24%", "h": "30%" }
+    },
+    {
+      "id": "casino", "name": "赌城卡", "price": 150, "skin": "casino", "art": "assets/cards/casino.png",
+      "coat": "assets/cards/casino_scratch.png",
+      "coatGrid": { "x": 0.2535, "y": 0.3329, "w": 0.4811, "h": 0.4319 },
+      "scratchGrid": { "x": 0.2535, "y": 0.3329, "w": 0.4811, "h": 0.4319 },
+      "rule": "任意一整行相同即中奖！小心炸弹！", "kind": "lines",
+      "pool": [
+        { "s": "bell", "img": "assets/cards/sym_bell.png", "w": 30, "label": "铃铛", "pay": "整行 +770" },
+        { "s": "cherry", "img": "assets/cards/sym_cherry.png", "w": 30, "label": "樱桃", "pay": "整行 +770" },
+        { "s": "seven", "img": "assets/cards/sym_seven.png", "w": 22, "label": "幸运7", "pay": "整行 +1970" },
+        { "s": "crown", "img": "assets/cards/sym_crown.png", "w": 8, "label": "皇冠", "pay": "通杀 +5500" },
+        { "s": "bomb", "img": "assets/cards/sym_bomb.png", "w": 10, "label": "炸弹", "pay": "每个 -60", "bad": true }
+      ],
+      "prize": { "dirs": ["row"], "bad": "bomb", "penaltyPer": 60, "linePay": { "bell": 770, "cherry": 770, "seven": 1970, "crown": 5500 } },
+      "inlineInfo": { "left": "calc(18% + 9px)", "top": "calc(78.5% + 13px)", "w": "58%", "h": "11.5%" }
+    },
+    {
+      "id": "star", "name": "星海卡", "price": 400, "skin": "star", "art": "assets/cards/star.png",
+      "coat": "assets/cards/star_scratch.png",
+      "coatGrid": { "x": 0.5338, "y": 0.3477, "w": 0.3513, "h": 0.3467 },
+      "scratchGrid": { "x": 0.5341, "y": 0.3492, "w": 0.3508, "h": 0.3454 },
+      "rule": "任意一条连线（横/竖/斜）相同即中奖！", "kind": "lines",
+      "pool": [
+        { "s": "xingxing", "img": "assets/cards/sym_xingxing.png", "w": 30, "label": "星星", "pay": "连线 +925" },
+        { "s": "hengxing", "img": "assets/cards/sym_hengxing.png", "w": 28, "label": "恒星", "pay": "连线 +670" },
+        { "s": "liuxing", "img": "assets/cards/sym_liuxing.png", "w": 22, "label": "流星", "pay": "连线 +460" },
+        { "s": "xingyun", "img": "assets/cards/sym_xingyun.png", "w": 12, "label": "星云", "pay": "连线 +9200" },
+        { "s": "heidong", "img": "assets/cards/sym_heidong.png", "w": 8, "label": "黑洞", "pay": "每个 -150", "bad": true }
+      ],
+      "prize": { "dirs": ["row", "col", "diag"], "bad": "heidong", "penaltyPer": 150, "linePay": { "liuxing": 460, "hengxing": 670, "xingxing": 925, "xingyun": 9200 } },
+      "inlineInfo": { "left": "calc(10% + 30px)", "top": "calc(44% - 10px)", "w": "34%", "h": "auto", "maxH": "30%" }
+    },
+    {
+      "id": "spacetime", "name": "时空卡", "price": 1000, "skin": "spacetime", "art": "assets/cards/spacetime.png",
+      "coat": "assets/cards/spacetime_scratch.png",
+      "coatGrid": { "x": 0.2664, "y": 0.2591, "w": 0.4684, "h": 0.4574 },
+      "scratchGrid": { "x": 0.2652, "y": 0.2603, "w": 0.4696, "h": 0.455 },
+      "rule": "任意连线相同即中奖！小心雷击！", "kind": "twin",
+      "pool": [
+        { "s": "shalou", "img": "assets/cards/sym_shalou.png", "w": 34, "label": "沙漏", "pay": "连线 +650" },
+        { "s": "xuanwo", "img": "assets/cards/sym_xuanwo.png", "w": 28, "label": "漩涡", "pay": "连线 +1180" },
+        { "s": "shuijingqiu", "img": "assets/cards/sym_shuijingqiu.png", "w": 22, "label": "水晶球", "pay": "连线 +1970" },
+        { "s": "jingzi", "img": "assets/cards/sym_jingzi.png", "w": 9, "label": "镜子", "pay": "连线 +10500" },
+        { "s": "leiji", "img": "assets/cards/sym_leiji.png", "w": 7, "label": "雷击", "pay": "每枚 -当前余额12%", "bad": true }
+      ],
+      "prize": { "coinPenaltyPct": 0.12, "base": { "dirs": ["row", "col", "diag"], "bad": "leiji", "penaltyPer": 0, "linePay": { "shalou": 650, "xuanwo": 1180, "shuijingqiu": 1970, "jingzi": 10500 } } },
+      "inlineInfo": { "left": "calc(16% + 95px)", "top": "76.5%", "w": "46%", "h": "auto", "maxH": "22%" }
+    }
+  ],
+
+  "logic": {
+    "judge": {
+      "match": "统计每种符号数量，每 3 个一组 × face 累加；无坏符号惩罚",
+      "collect": "若有 bad 符号 → 不触发全中，按最多同种符号数取 tiers 表；无 bad 且全为好符号 → allPrize",
+      "lines": "遍历 dirs（row/col/diag）所有线，线内全同且非 bad → 累加 linePay；每个 bad 扣 penaltyPer",
+      "twin": "生成平行时间线 B（隐藏第二套结果），A/B 分别按 base 判奖，取 net 较大者；bad 按 A 面施加 coinPenaltyPct 余额惩罚"
+    },
+    "levels": {
+      "thresholds": [0, 250, 700, 1800, 4500, 10000, 26000, 65000],
+      "maxLevel": 8,
+      "unlockCardByLevel": { "2": "orchard", "3": "mine", "4": "casino", "5": "star", "6": "spacetime" },
+      "unlockToolByLevel": { "2": "shell", "3": "clover", "4": "crystal", "5": "drill" }
+    },
+    "tools": [
+      { "id": "coin", "name": "硬币", "sub": "保底", "icon": "assets/icons/tool_coin.png", "acquire": { "type": "initial" }, "effect": "揭晓后返还本卡最高单格估值（封顶卡价 50%）" },
+      { "id": "shell", "name": "贝壳", "sub": "幸运", "icon": "assets/icons/tool_shell.png", "acquire": { "type": "level", "level": 2 }, "effect": "好符号权重 +15%，bad 权重 -30%" },
+      { "id": "clover", "name": "四叶草", "sub": "护身", "icon": "assets/icons/tool_clover.png", "acquire": { "type": "level", "level": 3 }, "effect": "开刮前移除 1 个 bad 符号" },
+      { "id": "crystal", "name": "水晶球", "sub": "透视", "icon": "assets/icons/tool_crystal.png", "acquire": { "type": "level", "level": 4 }, "effect": "发牌时预揭中央格(index 4)" },
+      { "id": "drill", "name": "钻头", "sub": "暴富", "icon": "assets/icons/tool_drill.png", "acquire": { "type": "level", "level": 5 }, "effect": "矿洞/赌城中奖 +25%，bad 伤害 +25%" }
+    ],
+    "perks": [
+      { "id": "fortune", "name": "财源广进", "desc": "所有中奖金额 +12%（可叠加）" },
+      { "id": "thrifty", "name": "精打细算", "desc": "购卡价 -8%，最多 -50%" },
+      { "id": "safety", "name": "稳健保底", "desc": "每张卡返还成本 ×25%，最多 100%" },
+      { "id": "jackpot2", "name": "一夜暴富", "desc": "中奖时 8% 概率金额 ×2（概率叠加）" },
+      { "id": "firstDouble", "name": "首刮双倍", "desc": "储存 1 次双倍机会；下一次中奖金额 ×2，未中奖不消耗" },
+      { "id": "amulet", "name": "护身符", "desc": "破产免死 1 次（金币归 50），可叠加" },
+      { "id": "combo", "name": "连击大师", "desc": "连中 3 次后奖金 ×1.5，断连失效" },
+      { "id": "treasure", "name": "鉴宝之眼", "desc": "矿石 / 水果类中奖额 +20%（可叠加）" },
+      { "id": "burst", "name": "爆奖蓄能", "desc": "未中奖蓄能 +10%，每层额外 +5%；中奖时释放加成，最高 +50%" },
+      { "id": "rebate", "name": "幸运加刮", "desc": "结算后 20% 概率返还本张卡价；每层 +8%，最高 60%" }
+    ],
+    "save": {
+      "key": "lucky-scratch",
+      "schema": {
+        "coins": 100, "level": 1, "unlockedCards": ["copper"], "ownedTools": ["coin"],
+        "equippedTool": "coin", "perks": [], "combo": 0, "burstEnergy": 0,
+        "stats": { "maxCoins": 100, "biggestJackpot": 0, "totalScratches": 0, "bankruptcies": 0 }
+      }
+    }
+  },
+
+  "interaction": {
+    "scratch": {
+      "input": "pointerdown(画布) → pointermove(window，支持甩出边界) → pointerup",
+      "brush": "圆形擦除，半径≈半格",
+      "autoReveal": "已刮面积达阈值后自动揭晓剩余全部格子"
+    },
+    "keys": { "a": "购卡区上一页", "d": "购卡区下一页", "1-5": "切换刮具", "blockedWhenOverlayOpen": ["a", "d"] },
+    "click": {
+      "unlockedSlot": "购买并发牌（扣金币）",
+      "lockedSlot": "不响应",
+      "tool": "已拥有→佩戴；未拥有→购买"
+    }
+  },
+
+  "fx": {
+    "banner": { "w": 1080, "aspect": "2466/338", "fontSize": 52, "top": "42%", "durationMs": 2200, "keyframes": "fxBanner: 0% scale .4 rotate -6deg → 14% scale 1.15 rotate 2deg → 24% scale 1 → 78% scale 1.02 → 100% 上移淡出" },
+    "shake": { "levels": { "1": "轻", "2": "中", "3": "强", "4": "18px / 1100ms" }, "note": "必须叠加在舞台 transform 之上，结束还原" },
+    "confetti": { "L3": 160, "L4": 240, "L4SecondWave": 80, "fallDistance": "1344px(自然尺寸)" },
+    "rays": { "L4": "2200ms 线性旋转 120°" },
+    "hitToast": { "good": "44%/55%/66%", "bad": "72%/82%/92%" },
+    "resultToast": { "y": "22%", "durationMs": 2200 }
+  },
+
+  "acceptance": [
+    "视口 1600×1000：舞台 k=0.840、顶 131；刮具栏 k=1、顶 230",
+    "视口 1258×900：舞台 k=0.735；等级条宽 980 且水平居中",
+    "任意视口：得分控件与等级条无重叠（间隙 > 0）",
+    "任意视口：舞台底 ≤ 状态条顶；刮具栏完整可见",
+    "未解锁卡片槽悬浮后仍为 grayscale(.85) brightness(.6) / opacity .5",
+    "状态条 rgba(255,250,236,.92) / 圆角 8 / 文字 #6b5335",
+    "得分数字 36px 900 斜体 #ffc42e + 两层橙色 drop-shadow",
+    "三选一卡片 220×329；图标盒 118×118（护身符 122×122）",
+    "刮到阈值自动揭晓剩余格子",
+    "A/D 翻页、1~5 切换刮具生效；弹窗打开时 A/D 失效",
+    "悬浮增益徽章显示米白气泡；移开隐藏",
+    "铜板卡概率显示 45.0% / 35.0% / 18.0% / 2.0%",
+    "250 分升 Lv2（解锁果园卡 + 贝壳 + 三选一）",
+    "结算后舞台 transform 与结算前一致（不跳位/不变大）"
+  ]
+}

@@ -1,0 +1,702 @@
+{
+ "generated": "2026-10-10T02:23:08.887Z",
+ "count": 80,
+ "files": [
+  {
+   "path": "assets\\bg.jpg",
+   "bytes": 513645,
+   "md5": "fcb76b30e8d7e733ce16e0e9ee785514"
+  },
+  {
+   "path": "assets\\cards\\casino.png",
+   "bytes": 3263464,
+   "md5": "d34a2e5ad2296dfd55edffac35006626",
+   "w": 1586,
+   "h": 1586,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\cards\\casino_scratch.png",
+   "bytes": 339222,
+   "md5": "24dbe54a39a29bb9203284d76d6a9d70",
+   "w": 1586,
+   "h": 1586,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\cards\\copper.png",
+   "bytes": 3728394,
+   "md5": "9a9d7ef681545b1f0bf7ef6bc54ce54e",
+   "w": 1676,
+   "h": 1676,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\cards\\copper_scratch.png",
+   "bytes": 149743,
+   "md5": "05c676788c0cc2e190d7a982c70065e8",
+   "w": 65536,
+   "h": 4292542596,
+   "colorType": 1,
+   "alpha": false
+  },
+  {
+   "path": "assets\\cards\\copper_scratch_1676.png",
+   "bytes": 801744,
+   "md5": "7d056f054e01457498159016762815c0",
+   "w": 1676,
+   "h": 1676,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\cards\\copper_scratch_1700.png",
+   "bytes": 822025,
+   "md5": "abae3b01c0e6a484731162b5963c9f59",
+   "w": 1700,
+   "h": 1700,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\cards\\mine.png",
+   "bytes": 3595268,
+   "md5": "8362807e49e5582ab716d400fe1a0d2b",
+   "w": 1724,
+   "h": 1724,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\cards\\mine_scratch.png",
+   "bytes": 788089,
+   "md5": "c89a165ff5d92269d911f0ff21207631",
+   "w": 1738,
+   "h": 1738,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\cards\\orchard.png",
+   "bytes": 3268839,
+   "md5": "590c71f3458ef0523c45f400c5f33df4",
+   "w": 1676,
+   "h": 1676,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\cards\\orchard_scratch.png",
+   "bytes": 310071,
+   "md5": "d928f4c080a3b7051d07d7bb8f06f561",
+   "w": 1676,
+   "h": 1676,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\cards\\spacetime.png",
+   "bytes": 3170298,
+   "md5": "2c2d822c5dc39cdbdcfabe7abd87bc64",
+   "w": 1644,
+   "h": 1644,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\cards\\spacetime_scratch.png",
+   "bytes": 703648,
+   "md5": "3a456d82a276774a86b56e7b7fade3c6",
+   "w": 1644,
+   "h": 1644,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\cards\\star.png",
+   "bytes": 3447871,
+   "md5": "78340f492f5170cdf02bd8fdf432b413",
+   "w": 1850,
+   "h": 1850,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\cards\\star_scratch.png",
+   "bytes": 591931,
+   "md5": "a4f020217f788643ce99f462f047279f",
+   "w": 1950,
+   "h": 1950,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\cards\\sym_apple.png",
+   "bytes": 75951,
+   "md5": "f4f2c3b43df342d72b857b2df5a63d6e",
+   "w": 256,
+   "h": 256,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\cards\\sym_bell.png",
+   "bytes": 58589,
+   "md5": "37a99a8cf2469f214733ac593aa3ab6a",
+   "w": 256,
+   "h": 256,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\cards\\sym_bomb.png",
+   "bytes": 44265,
+   "md5": "2ebb49860932110593f10ab3d816ccad",
+   "w": 256,
+   "h": 256,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\cards\\sym_cherry.png",
+   "bytes": 64289,
+   "md5": "ea7a2abecad0a9e576830026d946223e",
+   "w": 256,
+   "h": 256,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\cards\\sym_coin.png",
+   "bytes": 88397,
+   "md5": "a87f8ab4a701e1845fef4326324d5b21",
+   "w": 256,
+   "h": 256,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\cards\\sym_crown.png",
+   "bytes": 64739,
+   "md5": "37d814fc5d251b4aef3e0106134ea55f",
+   "w": 256,
+   "h": 256,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\cards\\sym_diamond.png",
+   "bytes": 60541,
+   "md5": "fd54cb20c79719c75ea36df4a69f63c7",
+   "w": 256,
+   "h": 256,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\cards\\sym_gold.png",
+   "bytes": 76426,
+   "md5": "6cc6f6ad6b4f6eb5f3625dcc71852ae2",
+   "w": 256,
+   "h": 256,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\cards\\sym_grape.png",
+   "bytes": 80706,
+   "md5": "2097ae25bbc522ea38563f6af7f2ff20",
+   "w": 256,
+   "h": 256,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\cards\\sym_heidong.png",
+   "bytes": 59676,
+   "md5": "f41b81055bc3542da95b52bb019430ea",
+   "w": 256,
+   "h": 256,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\cards\\sym_hengxing.png",
+   "bytes": 65582,
+   "md5": "3d247e1db071d3359d6dc7fd3a868390",
+   "w": 256,
+   "h": 256,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\cards\\sym_hongbao.png",
+   "bytes": 74836,
+   "md5": "b721ec9905727aaddd18a380dac362b0",
+   "w": 256,
+   "h": 256,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\cards\\sym_hulu.png",
+   "bytes": 53216,
+   "md5": "1508ed767f9ea94adf7c262c8cc2895d",
+   "w": 256,
+   "h": 256,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\cards\\sym_iron.png",
+   "bytes": 41615,
+   "md5": "37f795834fe6932a28fe63f746bbe442",
+   "w": 256,
+   "h": 256,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\cards\\sym_jingzi.png",
+   "bytes": 87355,
+   "md5": "d89d42c6bee2cb1808f07115754348ef",
+   "w": 256,
+   "h": 256,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\cards\\sym_leaf.png",
+   "bytes": 65043,
+   "md5": "ee7dda5add8fbbf06caf09a393562dc4",
+   "w": 256,
+   "h": 256,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\cards\\sym_leiji.png",
+   "bytes": 78101,
+   "md5": "eb3f77eedbd3a99f645103651302640a",
+   "w": 256,
+   "h": 256,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\cards\\sym_liuxing.png",
+   "bytes": 46868,
+   "md5": "a1049f1f55eb356295292afe604979bd",
+   "w": 256,
+   "h": 256,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\cards\\sym_orange.png",
+   "bytes": 66852,
+   "md5": "0cbb5df941c7bca010697cfe1564a8e2",
+   "w": 256,
+   "h": 256,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\cards\\sym_seven.png",
+   "bytes": 57676,
+   "md5": "8608c634edfef5cabc04c0d836884bb8",
+   "w": 256,
+   "h": 256,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\cards\\sym_shalou.png",
+   "bytes": 71513,
+   "md5": "baaf9de25d772dd8db7db946176fcc34",
+   "w": 256,
+   "h": 256,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\cards\\sym_shuijingqiu.png",
+   "bytes": 88028,
+   "md5": "35ced62d17a735a54de3a2e44851a8be",
+   "w": 256,
+   "h": 256,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\cards\\sym_strawberry.png",
+   "bytes": 81244,
+   "md5": "9fab245530f776d9ec1cad6a160f7a99",
+   "w": 256,
+   "h": 256,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\cards\\sym_xingxing.png",
+   "bytes": 51459,
+   "md5": "bdcbed7edce728070bca2d6eb5fe8b61",
+   "w": 256,
+   "h": 256,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\cards\\sym_xingyun.png",
+   "bytes": 55911,
+   "md5": "e22ead00eeadb8b67be059fcd250b5a2",
+   "w": 256,
+   "h": 256,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\cards\\sym_xuanwo.png",
+   "bytes": 103829,
+   "md5": "d29a69ae89bcc59ddf2290bfdb353dca",
+   "w": 256,
+   "h": 256,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\cards\\sym_yuanbao.png",
+   "bytes": 65364,
+   "md5": "4f13fcdf1035dde0ae14a83f15ce5d0f",
+   "w": 256,
+   "h": 256,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\fonts\\.gitkeep",
+   "bytes": 34,
+   "md5": "3a59620eeb2631dfbf4b8515372455c1"
+  },
+  {
+   "path": "assets\\fonts\\FarnModern-Bold.ttf",
+   "bytes": 19528,
+   "md5": "d343a466367feff4930a6b940fad328d"
+  },
+  {
+   "path": "assets\\fonts\\FarnModern-Regular.ttf",
+   "bytes": 18112,
+   "md5": "02d5189c784045833470b0ee2f136efd"
+  },
+  {
+   "path": "assets\\fonts\\FZLTBlackProGlobal.ttf",
+   "bytes": 8606152,
+   "md5": "2ebd63d3b95c125d19beecbb68dde077"
+  },
+  {
+   "path": "assets\\fonts\\FZLTBlackProGlobalHeavy.ttf",
+   "bytes": 8544296,
+   "md5": "781d2debebea11c88c71f1ef1d668f9b"
+  },
+  {
+   "path": "assets\\icons\\jackpot_banner.png",
+   "bytes": 918264,
+   "md5": "d261adfafcff6cf9b3c75868e7909e4f",
+   "w": 2466,
+   "h": 338,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\icons\\page_btn.png",
+   "bytes": 304,
+   "md5": "ebb3f8f0a7139bde23edf4773b4f2ecf",
+   "w": 50,
+   "h": 50,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\icons\\perk_badge.png",
+   "bytes": 77066,
+   "md5": "97e380965e5a0acd314384f26cd2b363",
+   "w": 261,
+   "h": 261,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\icons\\perk_card.png",
+   "bytes": 1267396,
+   "md5": "10a8e33cf3d453eebe262ce73d64bde1",
+   "w": 750,
+   "h": 1122,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\icons\\perk_icon_amulet.png",
+   "bytes": 687182,
+   "md5": "b1f26a8ff95bb1beaea9453ea92dfe9b",
+   "w": 504,
+   "h": 1066,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\icons\\perk_icon_burst.png",
+   "bytes": 1780733,
+   "md5": "c8812d0e6d05b9b9b26bceae52f0578c",
+   "w": 965,
+   "h": 997,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\icons\\perk_icon_combo.png",
+   "bytes": 1486369,
+   "md5": "5d3e73f0a184da7bbc0fea24cd3c5c70",
+   "w": 819,
+   "h": 1017,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\icons\\perk_icon_firstDouble.png",
+   "bytes": 786482,
+   "md5": "bd1b15cbc24324a718defada76ed0a1a",
+   "w": 648,
+   "h": 906,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\icons\\perk_icon_fortune.png",
+   "bytes": 1445648,
+   "md5": "8684c3d4bcb69b308a35aa80de021471",
+   "w": 818,
+   "h": 990,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\icons\\perk_icon_jackpot2.png",
+   "bytes": 1337381,
+   "md5": "792bde71357192b53b8bf3da3cb7ff5e",
+   "w": 982,
+   "h": 882,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\icons\\perk_icon_rebate.png",
+   "bytes": 1291674,
+   "md5": "f6ec41ca93fb0651d3ca41db2509c649",
+   "w": 954,
+   "h": 526,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\icons\\perk_icon_safety.png",
+   "bytes": 1376928,
+   "md5": "075662369e531e4b49c309c4376b4b17",
+   "w": 792,
+   "h": 900,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\icons\\perk_icon_thrifty.png",
+   "bytes": 911135,
+   "md5": "f95dfd201da8c9b05cf90a497f5a1a19",
+   "w": 1037,
+   "h": 713,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\icons\\perk_icon_treasure.png",
+   "bytes": 1255924,
+   "md5": "50b02de8e74f99c0d6ddcafecd3422ee",
+   "w": 859,
+   "h": 896,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\icons\\result_toast.png",
+   "bytes": 663941,
+   "md5": "9deeb0bb49b5ba08d3cd4aca274538ff",
+   "w": 1986,
+   "h": 400,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\icons\\slot_square.png",
+   "bytes": 1938,
+   "md5": "de74246db52731a0e11241bc1de024aa",
+   "w": 360,
+   "h": 360,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\icons\\slot_square_hover.png",
+   "bytes": 3640,
+   "md5": "e3169f8f1f9d59a4cc5c020a7cf69120",
+   "w": 258,
+   "h": 258,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\icons\\tool_clover.png",
+   "bytes": 30416,
+   "md5": "335932b404af76f5677970c359528bcf",
+   "w": 240,
+   "h": 240,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\icons\\tool_coin.png",
+   "bytes": 42397,
+   "md5": "369ca669345d50e779547d5f30611790",
+   "w": 320,
+   "h": 320,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\icons\\tool_crystal.png",
+   "bytes": 31231,
+   "md5": "76e6997120a6c342f67373ff1fd35599",
+   "w": 256,
+   "h": 256,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\icons\\tool_drill.png",
+   "bytes": 21184,
+   "md5": "218c0da0371308c8b955c70785016899",
+   "w": 276,
+   "h": 276,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\icons\\tool_frame.png",
+   "bytes": 112302,
+   "md5": "3416a7369b8a8da0f3b60db9260ae35c",
+   "w": 508,
+   "h": 508,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\icons\\tool_glow.png",
+   "bytes": 58831,
+   "md5": "f15b6a48225d175211770a2015c3cc8d",
+   "w": 400,
+   "h": 400,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\icons\\tool_shell.png",
+   "bytes": 38194,
+   "md5": "5d5db055d3be0dbe382c8fc5745ee60f",
+   "w": 268,
+   "h": 268,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\icons\\tool_tip.png",
+   "bytes": 323671,
+   "md5": "40268f06ce8286036d66c344375c6758",
+   "w": 1014,
+   "h": 333,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\icons\\tool_unlock_bg.png",
+   "bytes": 622721,
+   "md5": "328b00730504fe156790e71c9b3d7172",
+   "w": 623,
+   "h": 623,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\icons\\tool_unlock_btn.png",
+   "bytes": 34934,
+   "md5": "68a3cba85b434c658c7b98b70cf7461d",
+   "w": 204,
+   "h": 102,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\icons\\tool_unlock_icon_clover.png",
+   "bytes": 30793,
+   "md5": "65dbd5556e9427c7109bd3f9ad1b7b21",
+   "w": 623,
+   "h": 623,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\icons\\tool_unlock_icon_crystal.png",
+   "bytes": 26866,
+   "md5": "82900c44aa73f28fd734b62cba6d714d",
+   "w": 623,
+   "h": 623,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\icons\\tool_unlock_icon_drill.png",
+   "bytes": 17389,
+   "md5": "7ade3f7473f345ed18403e6aa22b91ae",
+   "w": 623,
+   "h": 623,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\icons\\tool_unlock_icon_shell.png",
+   "bytes": 24656,
+   "md5": "51bf80ee8e75dc98e7be647e6f46d429",
+   "w": 623,
+   "h": 623,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\icons\\tool_unlock_text_deco.png",
+   "bytes": 20861,
+   "md5": "2639fa8310ffd6597bfb6e427c898776",
+   "w": 623,
+   "h": 623,
+   "colorType": 6,
+   "alpha": true
+  },
+  {
+   "path": "assets\\icons\\tool_unlock_title_deco.png",
+   "bytes": 47072,
+   "md5": "05eef2bc53a975710d1ed1058b4bab83",
+   "w": 623,
+   "h": 623,
+   "colorType": 6,
+   "alpha": true
+  }
+ ]
+}

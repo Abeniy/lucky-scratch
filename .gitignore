@@ -1,3 +1,18 @@
 ﻿*.zip
 node_modules/
 .DS_Store
+
+# 商业 / 未确认授权的字体：仓库为公开仓库，不上传
+*.ttf
+*.otf
+*.woff
+*.woff2
+
+# 构建产物（可由 build.mjs / build-slim.mjs 重新生成；完整版内嵌了字体）
+幸运刮刮乐.html
+幸运刮刮乐-瘦身版.html
+
+# 临时目录
+_pkg_fonts/
+_pkg/
+_zipchk/

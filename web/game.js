@@ -18,100 +18,96 @@
   // pool 项：{ s 符号, w 权重, label 名称, pay 赔付/罚金说明, danger 是否为扣分项 }
   // prize 由 judge() 解读，赔付数值经 20 万次蒙特卡洛模拟微调，逼近策划目标 RTP。
   const CARD_DEFS = [
-    { id: 'copper',  name: '铜板卡', price: 10,  art: '🪙', sub: '古朴铜钱 · 安全爬坡',
+    { id: 'copper',  name: '铜板卡', price: 10,  art: '🪙', artClass: 'card-art-copper', skin: 'copper',       coatSrc: 'assets/cards/copper_scratch_1676.png',
+      coatGrid: { x: 0.494, y: 0.3831, w: 0.4087, h: 0.4051 },
+      coatShift: { x: 0, y: 0 },
+      coatScale: 1,
+      scratchGrid: { x: 0.494, y: 0.3831, w: 0.4087, h: 0.4051 },
+      sub: '古朴铜钱 · 安全爬坡',
       grad: 'linear-gradient(135deg,#8a5a1f,#caa24a)', rows: 3, cols: 3,
-      rule: '每凑齐 3 个相同图案得对应金币（可多组叠加）。无炸弹。',
+      rule: '刮出三个相同图案即可获胜！',
       pool: [
-        { s: '🪙', w: 45, label: '铜钱', pay: '三连 +6' },
-        { s: '🪴', w: 35, label: '青竹', pay: '三连 +12' },
-        { s: '🧧', w: 18, label: '红包', pay: '三连 +30' },
-        { s: '🐉', w: 2,  label: '龙纹', pay: '三连 +120' },
+        { s: 'coin',    img: 'assets/cards/sym_coin.png',    w: 45, label: '铜板', pay: '+6' },
+        { s: 'yuanbao', img: 'assets/cards/sym_yuanbao.png', w: 35, label: '元宝', pay: '+12' },
+        { s: 'hulu',    img: 'assets/cards/sym_hulu.png',    w: 18, label: '葫芦', pay: '+30' },
+        { s: 'hongbao', img: 'assets/cards/sym_hongbao.png', w: 2,  label: '红包', pay: '+120' },
       ],
-      prize: { kind: 'match', face: { '🪙': 6, '🪴': 12, '🧧': 30, '🐉': 120 } } },
-    { id: 'orchard', name: '果园卡', price: 25,  art: '🍎', sub: '清新果园 · 集齐水果',
+      prize: { kind: 'match', face: { coin: 6, yuanbao: 12, hulu: 30, hongbao: 120 } } },
+    { id: 'orchard', name: '果园卡', price: 25,  art: '🍎', artClass: 'card-art-orchard', skin: 'orchard', sub: '清新果园 · 集齐水果',
+      coatSrc: 'assets/cards/orchard_scratch.png',
+      coatGrid: { x: 0.2953, y: 0.2578, w: 0.4105, h: 0.3908 },
+      scratchGrid: { x: 0.2953, y: 0.2578, w: 0.4105, h: 0.3908 },
       grad: 'linear-gradient(135deg,#1f7a3a,#7ad07a)', rows: 3, cols: 3,
-      rule: '9 格全是水果 → 大奖 +112；否则按最多同种水果数给安慰奖（3/4/5/6+ → 5/12/30/60）。枯叶破坏全水果。',
+      rule: '全刮出水果获胜！同水果 3/4/5/6+ 个 +15/+35/+45/+60；小心枯叶！',
       pool: [
-        { s: '🍎', w: 21, label: '苹果', pay: '集齐 +112' },
-        { s: '🍊', w: 21, label: '橘子', pay: '集齐 +112' },
-        { s: '🍇', w: 20, label: '葡萄', pay: '集齐 +112' },
-        { s: '🍓', w: 20, label: '草莓', pay: '集齐 +112' },
-        { s: '🍂', w: 18, label: '枯叶', pay: '破坏全水果', danger: true },
+        { s: 'apple',      img: 'assets/cards/sym_apple.png',      w: 21, label: '苹果', pay: '集齐 +112' },
+        { s: 'orange',     img: 'assets/cards/sym_orange.png',     w: 21, label: '橘子', pay: '集齐 +112' },
+        { s: 'grape',      img: 'assets/cards/sym_grape.png',      w: 20, label: '葡萄', pay: '集齐 +112' },
+        { s: 'strawberry', img: 'assets/cards/sym_strawberry.png', w: 20, label: '草莓', pay: '集齐 +112' },
+        { s: 'leaf',       img: 'assets/cards/sym_leaf.png',       w: 18, label: '枯叶', pay: '破坏全水果', danger: true },
       ],
-      prize: { kind: 'collect', bad: '🍂', allPrize: 112,
+      prize: { kind: 'collect', bad: 'leaf', allPrize: 112,
         tiers: { 3: 15, 4: 35, 5: 45, 6: 60, 7: 60, 8: 60, 9: 60 } } },
-    { id: 'mine',    name: '矿洞卡', price: 60,  art: '💎', sub: '幽暗矿洞 · 含塌方💣',
+    { id: 'mine',    name: '矿洞卡', price: 60,  art: '💎', artClass: 'card-art-mine', skin: 'mine', sub: '幽暗矿洞 · 含塌方💣',
+      coatSrc: 'assets/cards/mine_scratch.png',
+      coatGrid: { x: 0.5006, y: 0.3297, w: 0.389, h: 0.3872 },
+      scratchGrid: { x: 0.5009, y: 0.3324, w: 0.388, h: 0.3833 },
       grad: 'linear-gradient(135deg,#2a3550,#5a7aa0)', rows: 3, cols: 3,
-      rule: '9 格全是矿石 → 巨奖 +450；否则按最多同种矿石给安慰奖。每个 💣 塌方 -20 金币，小心破产。',
+      rule: '全刮出矿石获得头奖！刮出同种矿石 3/4/5/6+ 个获得 +16/+42/+95/+205。小心炸弹！',
       pool: [
-        { s: '🟡', w: 28, label: '黄金', pay: '全矿石 +450' },
-        { s: '🔷', w: 27, label: '蓝宝石', pay: '全矿石 +450' },
-        { s: '💎', w: 25, label: '钻石', pay: '全矿石 +450' },
-        { s: '💣', w: 20, label: '塌方', pay: '每个 -20', danger: true },
+        { s: 'iron',    img: 'assets/cards/sym_iron.png',    w: 28, label: '铁矿', pay: '全矿石 +450' },
+        { s: 'gold',    img: 'assets/cards/sym_gold.png',    w: 27, label: '金矿', pay: '全矿石 +450' },
+        { s: 'diamond', img: 'assets/cards/sym_diamond.png', w: 25, label: '钻石', pay: '全矿石 +450' },
+        { s: 'bomb',    img: 'assets/cards/sym_bomb.png',    w: 20, label: '炸弹', pay: '每个 -20', danger: true },
       ],
-      prize: { kind: 'collect', bad: '💣', allPrize: 450, penaltyPer: 20,
+      prize: { kind: 'collect', bad: 'bomb', allPrize: 450, penaltyPer: 20,
         tiers: { 3: 16, 4: 42, 5: 95, 6: 205, 7: 205, 8: 205, 9: 205 } } },
-    { id: 'casino',  name: '赌城卡', price: 150, art: '🎰', sub: '霓虹赌场 · 777通杀',
+    { id: 'casino',  name: '赌城卡', price: 150, art: '🎰', artClass: 'card-art-casino', skin: 'casino', sub: '霓虹赌场 · 777通杀',
+      coatSrc: 'assets/cards/casino_scratch.png',
+      coatGrid: { x: 0.2535, y: 0.3329, w: 0.4811, h: 0.4319 },
+      scratchGrid: { x: 0.2535, y: 0.3329, w: 0.4811, h: 0.4319 },
       grad: 'linear-gradient(135deg,#7a1f4f,#d04bff)', rows: 3, cols: 3,
-      rule: '任意一整行（横排 3 格）全同即中奖；🎰 整行 777 通杀 +5500；每个 💣 炸弹 -60 金币。',
+      rule: '任意一整行相同即中奖！小心炸弹！',
       pool: [
-        { s: '🔔', w: 30, label: '铃铛', pay: '整行 +770' },
-        { s: '🍒', w: 30, label: '樱桃', pay: '整行 +770' },
-        { s: '7️⃣', w: 22, label: '幸运7', pay: '整行 +1970' },
-        { s: '🎰', w: 8,  label: '老虎机', pay: '通杀 +5500' },
-        { s: '💣', w: 10, label: '炸弹', pay: '每个 -60', danger: true },
+        { s: 'bell',   img: 'assets/cards/sym_bell.png',   w: 30, label: '铃铛', pay: '整行 +770' },
+        { s: 'cherry', img: 'assets/cards/sym_cherry.png', w: 30, label: '樱桃', pay: '整行 +770' },
+        { s: 'seven',  img: 'assets/cards/sym_seven.png',  w: 22, label: '幸运7', pay: '整行 +1970' },
+        { s: 'crown',  img: 'assets/cards/sym_crown.png',  w: 8,  label: '皇冠', pay: '通杀 +5500' },
+        { s: 'bomb',   img: 'assets/cards/sym_bomb.png',   w: 10, label: '炸弹', pay: '每个 -60', danger: true },
       ],
-      prize: { kind: 'lines', dirs: ['row'], bad: '💣', penaltyPer: 60,
-        linePay: { '🔔': 770, '🍒': 770, '7️⃣': 1970, '🎰': 5500 } } },
-    { id: 'star',    name: '星海卡', price: 400, art: '🌌', sub: '深空星海 · 极限波动',
+      prize: { kind: 'lines', dirs: ['row'], bad: 'bomb', penaltyPer: 60,
+        linePay: { bell: 770, cherry: 770, seven: 1970, crown: 5500 } } },
+    { id: 'star',    name: '星海卡', price: 400, art: '🌌', artClass: 'card-art-star', skin: 'star', sub: '深空星海 · 极限波动',
+      coatSrc: 'assets/cards/star_scratch.png',
+      coatGrid: { x: 0.5338, y: 0.3477, w: 0.3513, h: 0.3467 },
+      scratchGrid: { x: 0.5341, y: 0.3492, w: 0.3508, h: 0.3454 },
       grad: 'linear-gradient(135deg,#241b5a,#6a4bff)', rows: 3, cols: 3,
-      rule: '任意一条连线（横/竖/斜）全同即中奖（🪐/🌟/⭐ → 460/670/925）；☄️ 彗星连线 jackpot +9200；每个 🕳️ 黑洞 -150 金币。',
+      rule: '任意一条连线（横/竖/斜）相同即中奖！',
       pool: [
-        { s: '⭐', w: 30, label: '恒星', pay: '连线 +925' },
-        { s: '🌟', w: 28, label: '亮星', pay: '连线 +670' },
-        { s: '🪐', w: 22, label: '行星', pay: '连线 +460' },
-        { s: '☄️', w: 12, label: '彗星', pay: '连线 jackpot +9200' },
-        { s: '🕳️', w: 8,  label: '黑洞', pay: '每个 -150', danger: true },
+        { s: 'xingxing', img: 'assets/cards/sym_xingxing.png?v=2', w: 30, label: '星星', pay: '连线 +925' },
+        { s: 'hengxing', img: 'assets/cards/sym_hengxing.png?v=3', w: 28, label: '恒星', pay: '连线 +670' },
+        { s: 'liuxing',  img: 'assets/cards/sym_liuxing.png',  w: 22, label: '流星', pay: '连线 +460' },
+        { s: 'xingyun',  img: 'assets/cards/sym_xingyun.png?v=2',  w: 12, label: '星云', pay: '连线 +9200' },
+        { s: 'heidong',  img: 'assets/cards/sym_heidong.png?v=2',  w: 8,  label: '黑洞', pay: '每个 -150', danger: true },
       ],
-      prize: { kind: 'lines', dirs: ['row', 'col', 'diag'], bad: '🕳️', penaltyPer: 150,
-        linePay: { '🪐': 460, '🌟': 670, '⭐': 925, '☄️': 9200 } } },
-    { id: 'spacetime', name: '时空卡', price: 1000, art: '⏳', sub: '平行时空 · 双线取优',
+      prize: { kind: 'lines', dirs: ['row', 'col', 'diag'], bad: 'heidong', penaltyPer: 150,
+        linePay: { liuxing: 460, hengxing: 670, xingxing: 925, xingyun: 9200 } } },
+    { id: 'spacetime', name: '时空卡', price: 1000, art: '⏳', artClass: 'card-art-spacetime', skin: 'spacetime', sub: '平行时空 · 双线取优',
+      coatSrc: 'assets/cards/spacetime_scratch.png',
+      coatGrid: { x: 0.2664, y: 0.2591, w: 0.4684, h: 0.4574 },
+      scratchGrid: { x: 0.2652, y: 0.2603, w: 0.4696, h: 0.455 },
       grad: 'linear-gradient(135deg,#3a2a6a,#9b6bff)', rows: 3, cols: 3,
-      rule: '任意连线（横/竖/斜）全同即中奖（⏳/🌀/🔮 → 650/1180/1970）；🌟 超新星连线 jackpot +10500。每枚 ⚡ 雷击按当前余额扣 12%（不致死）。结算时额外取一条平行时间线结果，取较优者。',
+      rule: '任意连线相同即中奖！小心雷击！',
       pool: [
-        { s: '⏳', w: 34, label: '时间沙', pay: '连线 +650' },
-        { s: '🌀', w: 28, label: '时空漩涡', pay: '连线 +1180' },
-        { s: '🔮', w: 22, label: '预言', pay: '连线 +1970' },
-        { s: '🌟', w: 9,  label: '超新星', pay: '连线 jackpot +10500' },
-        { s: '⚡', w: 7,  label: '雷击', pay: '每枚 -当前余额12%', danger: true },
+        { s: 'shalou',      img: 'assets/cards/sym_shalou.png',      w: 34, label: '沙漏', pay: '连线 +650' },
+        { s: 'xuanwo',      img: 'assets/cards/sym_xuanwo.png',      w: 28, label: '漩涡', pay: '连线 +1180' },
+        { s: 'shuijingqiu', img: 'assets/cards/sym_shuijingqiu.png', w: 22, label: '水晶球', pay: '连线 +1970' },
+        { s: 'jingzi',      img: 'assets/cards/sym_jingzi.png',      w: 9,  label: '镜子', pay: '连线 +10500' },
+        { s: 'leiji',       img: 'assets/cards/sym_leiji.png',       w: 7,  label: '雷击', pay: '每枚 -当前余额12%', danger: true },
       ],
       prize: { kind: 'twin', coinPenaltyPct: 0.12,
-        base: { kind: 'lines', dirs: ['row', 'col', 'diag'], bad: '⚡', penaltyPer: 0,
-          linePay: { '⏳': 650, '🌀': 1180, '🔮': 1970, '🌟': 10500 } } } },
-    { id: 'myth', name: '神话卡', price: 2500, art: '🐉', sub: '远古神话 · 分阶巨奖',
-      grad: 'linear-gradient(135deg,#5a2a1f,#d07a3a)', rows: 3, cols: 3,
-      rule: '任意连线全同即中奖（🐉/🦄/🔱 → 2900/4000/5300）；🐲 神话龙连线 jackpot +45000。每枚 🩸 诅咒 -200 金币。',
-      pool: [
-        { s: '🐉', w: 32, label: '神龙', pay: '连线 +2900' },
-        { s: '🦄', w: 28, label: '独角兽', pay: '连线 +4000' },
-        { s: '🔱', w: 22, label: '海神戟', pay: '连线 +5300' },
-        { s: '🐲', w: 11, label: '神话龙', pay: '连线 jackpot +45000' },
-        { s: '🩸', w: 7,  label: '诅咒', pay: '每个 -200', danger: true },
-      ],
-      prize: { kind: 'lines', dirs: ['row', 'col', 'diag'], bad: '🩸', penaltyPer: 200,
-        linePay: { '🐉': 2900, '🦄': 4000, '🔱': 5300, '🐲': 45000 } } },
-    { id: 'genesis', name: '创世卡', price: 6000, art: '🌌', sub: '宇宙尽头 · 极限波动',
-      grad: 'linear-gradient(135deg,#1a1a4a,#4b6bff)', rows: 3, cols: 3,
-      rule: '任意连线全同即中奖（🌠/☀️/🌟 → 7000/9800/13200）；💫 创世 jackpot +125000。每枚 🕳️ 双向黑洞 -600 金币（可破产）。',
-      pool: [
-        { s: '🌠', w: 32, label: '流星', pay: '连线 +7000' },
-        { s: '☀️', w: 28, label: '恒星', pay: '连线 +9800' },
-        { s: '🌟', w: 20, label: '超新星', pay: '连线 +13200' },
-        { s: '💫', w: 11, label: '创世', pay: '连线 jackpot +125000' },
-        { s: '🕳️', w: 9,  label: '双向黑洞', pay: '每个 -600', danger: true },
-      ],
-      prize: { kind: 'lines', dirs: ['row', 'col', 'diag'], bad: '🕳️', penaltyPer: 600,
-        linePay: { '🌠': 7000, '☀️': 9800, '🌟': 13200, '💫': 125000 } } },
+        base: { kind: 'lines', dirs: ['row', 'col', 'diag'], bad: 'leiji', penaltyPer: 0,
+          linePay: { shalou: 650, xuanwo: 1180, shuijingqiu: 1970, jingzi: 10500 } } } }
   ];
   const CARD_MAP = {};
   CARD_DEFS.forEach((c) => { CARD_MAP[c.id] = c; });
@@ -181,37 +177,302 @@
     recordValue: document.getElementById('recordValue'),
     perkBar: document.getElementById('perkBar'),
     shopList: document.getElementById('shopList'),
+    shopPrev: document.getElementById('shopPrev'),
+    shopNext: document.getElementById('shopNext'),
+    shopPageLabel: document.getElementById('shopPageLabel'),
     toolList: document.getElementById('toolList'),
+    toolTip: document.getElementById('toolTip'),
+    toolTipText: document.getElementById('toolTipText'),
     scratchArea: document.getElementById('scratchArea'),
     cardInfo: document.getElementById('cardInfo'),
     statusMsg: document.getElementById('statusMsg'),
-    resetBtn: document.getElementById('resetBtn'),
+    debugBtn: document.getElementById('debugBtn'),
+    debugPanel: document.getElementById('debugPanel'),
+    dbgUnlockAll: document.getElementById('dbgUnlockAll'),
+    dbgLevelUp: document.getElementById('dbgLevelUp'),
+    dbgReset: document.getElementById('dbgReset'),
   };
   function setStatus(msg) { if (els.statusMsg) els.statusMsg.textContent = msg; }
+  function initHudLayout() { syncHudSide(); fitStage(); }
+
+  /* ===== 布局自适应 =====
+     刮具栏：贴右边缘，独立缩放（高度不足时整体等比缩小，保证五个刮具完整可见）
+     舞台单元（卡片 + 购入栏）：左右对称预留"刮具栏区 + 隐形边界"，所以永不重叠且保持居中 */
+  const STAGE_SAFE = 16;     // 上下各留的安全边
+  const TOOLS_GAP = 24;      // 卡片与刮具栏之间的隐形边界
+  const TOOLS_RIGHT = 50;    // 刮具栏距右边缘
+
+  // 返回上下被占用的高度，以及可用区中心
+  function stageMetrics() {
+    const vw = window.innerWidth, vh = window.innerHeight;
+    let topOcc = 0;
+    ['.topbar', '.perk-bar'].forEach((sel) => {
+      const el = document.querySelector(sel);
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      if (r.height > 0) topOcc = Math.max(topOcc, r.bottom);
+    });
+    let botOcc = 0;
+    const status = document.querySelector('.statusbar');
+    if (status) {
+      const r = status.getBoundingClientRect();
+      if (r.height > 0) botOcc = Math.max(0, vh - r.top);
+    }
+    return {
+      vw: vw, vh: vh,
+      topOcc: topOcc, botOcc: botOcc,
+      availH: Math.max(120, vh - topOcc - botOcc - STAGE_SAFE * 2),
+      safeCenter: (topOcc + (vh - botOcc)) / 2,
+    };
+  }
+
+  // 刮具栏：整体等比缩放并垂直居中于可用区
+  function fitTools(m) {
+    const tools = document.querySelector('.tools');
+    if (!tools) return { w: 178, h: 0 };
+    const nw = tools.offsetWidth || 128;     // offsetWidth/Height 不受 transform 影响
+    const nh = tools.offsetHeight || 592;
+    // 高度不够就整体缩小；同时限制缩放后的宽度不超过视口的 28%
+    const k = Math.min(1, m.availH / nh, (m.vw * 0.28) / nw);
+    tools.style.transform = 'scale(' + k + ')';
+    // 垂直居中于可用区：上边缘 = 可用区中心 − 自然高度/2（缩放绕中心，中心不变）
+    tools.style.top = Math.round(m.safeCenter - nh / 2) + 'px';
+    return { w: nw * k, h: nh * k, k: k };
+  }
+
+  function fitStage() {
+    const game = document.getElementById('game');
+    if (!game) return;
+    const m = stageMetrics();
+    const tools = fitTools(m);
+    // 左右对称预留「刮具栏实宽 + 右边距 + 隐形边界」，卡片因此永远碰不到刮具栏，且仍居中
+    const reserve = Math.min(tools.w + TOOLS_RIGHT + TOOLS_GAP, m.vw * 0.28);
+    const availW = Math.max(160, m.vw - reserve * 2);
+    const naturalW = game.offsetWidth || 920;
+    const naturalH = game.offsetHeight || 940;
+    const k = Math.min(1, m.availH / naturalH, availW / naturalW);
+    const offset = (m.topOcc - m.botOcc) / 2;   // 把"视口中心"修正为"可用区中心"
+    game.style.transform = 'translateY(' + offset + 'px) scale(' + k + ')';
+  }
+  window.addEventListener('resize', fitStage);
+  if (window.ResizeObserver) {
+    const ro = new ResizeObserver(() => fitStage());
+    const perk = document.querySelector('.perk-bar');
+    if (perk) ro.observe(perk);
+  }
+
+  /* ===== 顶栏隐形边界：按得分控件实际宽度维护两侧预留区，保证等级条不被遮挡且居中 ===== */
+  const HUD_GUTTER = 24;   // 得分控件与等级条之间的隐形间隙
+  function syncHudSide() {
+    const coins = document.querySelector('.coins');
+    if (!coins) return;
+    const w = Math.ceil(coins.getBoundingClientRect().width);
+    if (!w) return;
+    // 夹在合理区间，避免异常值把栅格撑爆
+    const side = Math.min(Math.max(w + HUD_GUTTER, 140), 460);
+    document.documentElement.style.setProperty('--hud-side', side + 'px');
+  }
+  if (window.ResizeObserver) {
+    const ro = new ResizeObserver(syncHudSide);
+    const coinsEl = document.querySelector('.coins');
+    if (coinsEl) ro.observe(coinsEl);
+  }
+  window.addEventListener('resize', syncHudSide);
+
+  /* ===== 调试模式：解锁全部卡片与刮具，并把得分设为 10000 ===== */
+  const DEBUG_COINS = 10000;
+  function enterDebugMode() {
+    state.unlockedCards = CARD_DEFS.map((c) => c.id);
+    state.ownedTools = TOOL_DEFS.map((t) => t.id);
+    state.coins = DEBUG_COINS;
+    if (!state.stats) state.stats = {};
+    if (state.stats.maxCoins < state.coins) state.stats.maxCoins = state.coins;
+    // 等级同步到能容纳这些卡片的档位，避免出现已解锁但等级不足的显示异常
+    const needLevel = Math.min(MAX_LEVEL, CARD_DEFS.length);
+    if (state.level < needLevel) state.level = needLevel;
+    save();
+    render();
+    setStatus('🔧 调试模式：已解锁全部 ' + CARD_DEFS.length + ' 张卡片与全部刮具，得分 ' + DEBUG_COINS);
+  }
+  /* ===== 调试：升一级（补足到下一级所需得分，走正常升级流程，用于测试增益） ===== */
+  function debugLevelUp() {
+    if (state.level >= MAX_LEVEL) { setStatus('🔧 调试：已是最高等级 Lv.' + MAX_LEVEL); return; }
+    const need = LEVEL_THRESHOLDS[state.level];
+    if (state.coins < need) {
+      state.coins = need;
+      if (state.coins > state.stats.maxCoins) state.stats.maxCoins = state.coins;
+    }
+    const up = checkLevelUp();
+    save(); render();
+    if (up.tools && up.tools.length) {
+      queueToolUnlockPopups(up.tools, () => { if (up.levels > 0) queuePerkChoices(up.levels); });
+    } else if (up.levels > 0) {
+      queuePerkChoices(up.levels);
+    }
+    setStatus('🔧 调试：升至 Lv.' + state.level + '（得分 ' + state.coins + '）');
+  }
+  /* ===== 铜板卡底图对齐校准 ===== */
+  const COPPER_ALIGN_KEY = 'lucky-copper-align';
+  let copperAlign = { x: 0, y: 0, s: 1 };
+  let copperCalibOn = false;
+  function applyCopperAlign() {
+    const a = els.scratchArea;
+    if (!a) return;
+    a.style.setProperty('--card-offx', copperAlign.x + 'px');
+    a.style.setProperty('--card-offy', copperAlign.y + 'px');
+    a.style.setProperty('--card-scale', String(copperAlign.s));
+  }
+  // 校准偏移只在当前会话生效，不写入 localStorage：
+  // 否则 IDE 预览与浏览器/单文件版会读到不同的偏移，导致两边显示不一致。
+  function loadCopperAlign() {
+    copperAlign = { x: 0, y: 0, s: 1 };
+    applyCopperAlign();
+  }
+  function saveCopperAlign() {
+    /* 不持久化，保持各环境一致 */
+  }
+  function calibKeyHandler(e) {
+    if (!copperCalibOn) return;
+    const step = e.shiftKey ? 10 : 1;
+    let used = true;
+    switch (e.key) {
+      case 'ArrowLeft': copperAlign.x -= step; break;
+      case 'ArrowRight': copperAlign.x += step; break;
+      case 'ArrowUp': copperAlign.y -= step; break;
+      case 'ArrowDown': copperAlign.y += step; break;
+      case '+': case '=': copperAlign.s = Math.round((copperAlign.s + 0.01) * 100) / 100; break;
+      case '-': case '_': copperAlign.s = Math.round((copperAlign.s - 0.01) * 100) / 100; break;
+      case 'r': case 'R': copperAlign = { x: 0, y: 0, s: 1 }; break;
+      case 'Escape': setCopperCalibration(false); saveCopperAlign(); return;
+      default: used = false;
+    }
+    if (used) {
+      e.preventDefault();
+      applyCopperAlign();
+      saveCopperAlign();
+      console.log('[copper align]', JSON.stringify(copperAlign));
+    }
+  }
+  function setCopperCalibration(on) {
+    copperCalibOn = !!on;
+    if (copperCalibOn) {
+      document.addEventListener('keydown', calibKeyHandler);
+      setStatus('🔧 校准模式：方向键移动底图（Shift=10px），+/- 缩放，R 重置，Esc 保存退出');
+      console.log('[copper align] 当前值', JSON.stringify(copperAlign));
+    } else {
+      document.removeEventListener('keydown', calibKeyHandler);
+      saveCopperAlign();
+      setStatus('校准完成并已保存：' + JSON.stringify(copperAlign));
+    }
+  }
+
+  function cardArtHtml(card, cls) {
+    return card && card.artClass
+      ? '<span class="' + cls + ' card-art-img ' + card.artClass + '"></span>'
+      : '<span class="' + cls + '">' + ((card && card.art) || '') + '</span>';
+  }
+  // 符号渲染：pool 里有 img 的用 PNG 素材，否则按原文本（emoji）输出
+  function symbolHtml(card, s) {
+    const p = card && card.pool && card.pool.find((q) => q.s === s);
+    if (p && p.img) return '<img class="sym-img" src="' + p.img + '" alt="" draggable="false">';
+    return s;
+  }
+  // 概率行：图案 + 数字概率（占原名称位置）+ 金额说明（已去掉名称与条形 UI）
+  function cardOddsHtml(card) {
+    const total = card.pool.reduce((s, p) => s + p.w, 0);
+    return card.pool.map((p) => {
+      const pct = (p.w / total) * 100;
+      const payCls = p.danger ? 'od-pay danger' : 'od-pay';
+      return (
+        '<li>' +
+          '<span class="od-sym">' + symbolHtml(card, p.s) + '</span>' +
+          '<span class="od-pct">' + boldNumbers(pct.toFixed(1) + '%') + '</span>' +
+          '<span class="' + payCls + '">' + boldNumbers(p.pay || '') + '</span>' +
+        '</li>'
+      );
+    }).join('');
+  }
+  // 文本里的所有数字加粗（用于说明文案中的金额/数值）
+  function boldNumbers(text) {
+    return String(text == null ? '' : text).replace(/(\d+(?:\.\d+)?)/g, '<b class="num">$1</b>');
+  }
+  function inlineCardInfoHtml(card) {
+    // 铜板卡：保留图案与数字，只去掉「出现概率」这个标题文字；「中奖要求」居中
+    if (card && card.skin === 'copper') {
+      return '<div class="inline-label">中奖要求</div>' +
+        '<p class="inline-rule">' + boldNumbers(card.rule) + '</p>' +
+        '<ul class="ci-odds inline-odds">' + cardOddsHtml(card) + '</ul>';
+    }
+    // 所有卡：去掉「出现概率」这四个字，直接列图案与概率
+    return '<div class="inline-label">中奖要求</div>' +
+      '<p class="inline-rule">' + card.rule + '</p>' +
+      '<ul class="ci-odds inline-odds">' + cardOddsHtml(card) + '</ul>';
+  }
+  const SKIN_CLASS = {
+    copper: 'card-skin-copper',
+    orchard: 'card-skin-orchard',
+    mine: 'card-skin-mine',
+    casino: 'card-skin-casino',
+    star: 'card-skin-star',
+    spacetime: 'card-skin-spacetime',
+  };
+
+  const SHOP_PAGE_SIZE = 5;
+  let shopPage = 0;
+  function shopPageCount() { return Math.max(1, Math.ceil(CARD_DEFS.length / SHOP_PAGE_SIZE)); }
+  // 翻页：delta = -1 上一页 / +1 下一页；已到边界则不处理，返回是否翻页成功
+  function changeShopPage(delta) {
+    const max = shopPageCount() - 1;
+    const next = Math.max(0, Math.min(max, shopPage + delta));
+    if (next === shopPage) return false;
+    shopPage = next;
+    renderShop();
+    return true;
+  }
+  function cardUnlockLevel(cardId) {
+    const idx = CARD_DEFS.findIndex((c) => c.id === cardId);
+    return idx < 0 ? 1 : idx + 1;
+  }
+  function renderShop() {
+    if (!els.shopList) return;
+    const pageCount = shopPageCount();
+    if (shopPage >= pageCount) shopPage = pageCount - 1;
+    const start = shopPage * SHOP_PAGE_SIZE;
+    const cards = CARD_DEFS.slice(start, start + SHOP_PAGE_SIZE);
+    const html = [];
+    for (let i = 0; i < SHOP_PAGE_SIZE; i++) {
+      const card = cards[i];
+      if (!card) {
+        html.push('<button class="card-item card-slot empty" type="button" disabled aria-hidden="true"></button>');
+        continue;
+      }
+      const unlocked = state.unlockedCards.includes(card.id);
+      const cls = 'card-item card-slot' + (unlocked ? '' : ' locked');
+      const price = cardPrice(card);
+      html.push(
+        '<button class="' + cls + '" type="button" data-card="' + card.id + '" aria-label="' + card.name + '：' + card.rule + '">' +
+          cardArtHtml(card, 'card-emoji') +
+          '<span class="card-name">' + card.name + '</span>' +
+          '<span class="card-price">' + price + '</span>' +
+          '<span class="card-lock">🔒Lv.' + cardUnlockLevel(card.id) + '</span>' +
+        '</button>'
+      );
+    }
+    els.shopList.innerHTML = html.join('');
+    if (els.shopPrev) els.shopPrev.disabled = shopPage <= 0;
+    if (els.shopNext) els.shopNext.disabled = shopPage >= pageCount - 1;
+    if (els.shopPageLabel) els.shopPageLabel.textContent = (shopPage + 1) + '/' + pageCount;
+  }
 
   /* ===== 渲染 ===== */
   function render() {
-    els.coinValue.textContent = state.coins.toLocaleString();
+    els.coinValue.textContent = String(state.coins);
     const info = levelInfo();
     els.levelText.textContent = 'Lv.' + state.level;
     if (info.isMax) { els.levelHint.textContent = 'MAX'; els.levelFill.style.width = '100%'; }
     else { els.levelHint.textContent = '距下一级 ' + info.toNext; els.levelFill.style.width = info.percent.toFixed(1) + '%'; }
     els.recordValue.textContent = state.stats.maxCoins.toLocaleString();
-    els.shopList.querySelectorAll('.card-item').forEach((btn) => {
-      btn.classList.toggle('locked', !state.unlockedCards.includes(btn.dataset.card));
-      // 每张卡都显示价格（含未解锁卡）：以 CARD_MAP 为单一数据源动态注入
-      const card = CARD_MAP[btn.dataset.card];
-      if (card) {
-        let priceEl = btn.querySelector('.card-price');
-        if (!priceEl) {
-          priceEl = document.createElement('span');
-          priceEl.className = 'card-price';
-          const lock = btn.querySelector('.card-lock');
-          if (lock) btn.insertBefore(priceEl, lock); else btn.appendChild(priceEl);
-        }
-        priceEl.textContent = card.price;
-      }
-    });
+    renderShop();
     renderTools();
     renderPerks();
   }
@@ -224,9 +485,11 @@
    *    并清掉该格残余涂层；所有格揭晓后触发整体结算回调。
    * ========================================================= */
   const Scratch = {
-    area: null, header: null, zone: null, content: null, canvas: null, ctx: null,
+    area: null, header: null, inlineInfo: null, zone: null, content: null, canvas: null, ctx: null,
     cssW: 0, cssH: 0, dpr: 1,
     rows: 3, cols: 3,
+    currentCard: null,
+    coatImg: null,
     cells: [],            // 每格 DOM 的 .sym 元素
     revealed: null,       // Set<number> 已揭晓格索引
     preReveal: [],        // 发牌即预揭的格索引（水晶球刮具）
@@ -244,6 +507,8 @@
       areaEl.innerHTML = '';
       this.header = document.createElement('div');
       this.header.className = 'card-header';
+      this.inlineInfo = document.createElement('div');
+      this.inlineInfo.className = 'card-inline-info';
       this.zone = document.createElement('div');
       this.zone.className = 'scratch-zone';
       this.content = document.createElement('div');
@@ -253,6 +518,7 @@
       this.zone.appendChild(this.content);
       this.zone.appendChild(this.canvas);
       areaEl.appendChild(this.header);
+      areaEl.appendChild(this.inlineInfo);
       areaEl.appendChild(this.zone);
       this.ctx = this.canvas.getContext('2d', { willReadFrequently: true });
       this._bind();
@@ -264,11 +530,16 @@
       opts = opts || {};
       const renderCard = () => {
         this.rows = card.rows; this.cols = card.cols;
+        this.currentCard = card;
         this.preReveal = card.preReveal || [];
         // 卡头
+        Object.keys(SKIN_CLASS).forEach((skin) => {
+          this.area.classList.toggle(SKIN_CLASS[skin], card.skin === skin);
+        });
+        if (this.inlineInfo) this.inlineInfo.innerHTML = SKIN_CLASS[card.skin] ? inlineCardInfoHtml(card) : '';
         this.header.style.background = card.grad;
         this.header.innerHTML =
-          '<span class="ch-art">' + card.art + '</span>' +
+          cardArtHtml(card, 'ch-art') +
           '<span class="ch-meta">' +
             '<span class="ch-name">' + card.name + '</span>' +
             '<span class="ch-sub">' + card.sub + '</span>' +
@@ -284,7 +555,8 @@
           cell.className = 'cell';
           const sym = document.createElement('span');
           sym.className = 'sym';
-          sym.textContent = card.symbols[i];
+          sym.dataset.sym = card.symbols[i];
+          sym.innerHTML = symbolHtml(card, card.symbols[i]);
           cell.appendChild(sym);
           this.content.appendChild(cell);
           this.cells.push(sym);
@@ -328,17 +600,63 @@
       this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
     },
 
+    _gridRect() {
+      const g = this.currentCard && this.currentCard.scratchGrid;
+      if (!g) return { x: 0, y: 0, w: this.cssW, h: this.cssH };
+      return { x: g.x * this.cssW, y: g.y * this.cssH, w: g.w * this.cssW, h: g.h * this.cssH };
+    },
+
     // 按格子尺寸放大符号，增强填充感
     _fitSymbols() {
-      const cellW = this.cssW / this.cols;
+      const grid = this._gridRect();
+      const cellW = grid.w / this.cols;
       const size = Math.floor(cellW * 0.62);
       this.cells.forEach((s) => { s.style.fontSize = size + 'px'; });
     },
 
     _coat() {
       const ctx = this.ctx, w = this.cssW, h = this.cssH;
+      const src = this.currentCard && this.currentCard.coatSrc;
       ctx.globalCompositeOperation = 'source-over';
       ctx.clearRect(0, 0, w, h);
+      if (src) {
+        const drawCover = (img) => {
+          ctx.globalCompositeOperation = 'source-over';
+          ctx.clearRect(0, 0, w, h);
+          // 把刮区图的九宫格精确映射到底图的九宫格上：
+          // 缩放系数 = 底图格宽 / 刮区格宽，偏移让两个格子区域完全重合
+          const sg = this.currentCard && this.currentCard.scratchGrid;
+          const cg = this.currentCard && this.currentCard.coatGrid;
+          if (!sg || !cg) { ctx.drawImage(img, 0, 0, w, h); return; }
+          const kx = sg.w / cg.w;
+          const ky = sg.h / cg.h;
+          const dw = w * kx;
+          const dh = h * ky;
+          const sh = this.currentCard.coatShift || { x: 0, y: 0 };
+          const dx = sg.x * w - cg.x * dw + sh.x;
+          const dy = sg.y * h - cg.y * dh + sh.y;
+          // 额外缩放：以九宫格中心为基准整体放大/缩小，保持中心不跑偏
+          const cs = this.currentCard.coatScale || 1;
+          if (cs === 1) { ctx.drawImage(img, dx, dy, dw, dh); return; }
+          const cx = (sg.x + sg.w / 2) * w;
+          const cy = (sg.y + sg.h / 2) * h;
+          const fx = cx - (cx - dx) * cs;
+          const fy = cy - (cy - dy) * cs;
+          ctx.drawImage(img, fx, fy, dw * cs, dh * cs);
+        };
+        if (this.coatImg && this.coatImg.dataset.src === src && this.coatImg.complete) {
+          drawCover(this.coatImg);
+        } else {
+          const img = new Image();
+          img.dataset.src = src;
+          img.onload = () => {
+            if (this.currentCard && this.currentCard.coatSrc === src) drawCover(img);
+          };
+          img.src = src;
+          this.coatImg = img;
+        }
+        return;
+      }
       const g = ctx.createLinearGradient(0, 0, w, h);
       g.addColorStop(0, '#3a3560'); g.addColorStop(0.5, '#565089'); g.addColorStop(1, '#2c2848');
       ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
@@ -477,12 +795,17 @@
       const data = this.ctx.getImageData(0, 0, W, H).data;
       const cleared = new Array(this.rows * this.cols).fill(0);
       const total = new Array(this.rows * this.cols).fill(0);
-      const cellWdev = W / this.cols, cellHdev = H / this.rows;
+      const grid = this._gridRect();
+      const gx = Math.max(0, Math.floor(grid.x * this.dpr));
+      const gy = Math.max(0, Math.floor(grid.y * this.dpr));
+      const gw = Math.min(W - gx, Math.ceil(grid.w * this.dpr));
+      const gh = Math.min(H - gy, Math.ceil(grid.h * this.dpr));
+      const cellWdev = gw / this.cols, cellHdev = gh / this.rows;
       const step = 4; // 像素步进（设备像素），每隔 4px 采一次
-      for (let py = 0; py < H; py += step) {
-        for (let px = 0; px < W; px += step) {
-          const col = Math.min(this.cols - 1, Math.floor(px / cellWdev));
-          const row = Math.min(this.rows - 1, Math.floor(py / cellHdev));
+      for (let py = gy; py < gy + gh; py += step) {
+        for (let px = gx; px < gx + gw; px += step) {
+          const col = Math.min(this.cols - 1, Math.floor((px - gx) / cellWdev));
+          const row = Math.min(this.rows - 1, Math.floor((py - gy) / cellHdev));
           const idx = row * this.cols + col;
           total[idx]++;
           const a = data[(py * W + px) * 4 + 3];
@@ -500,13 +823,14 @@
     _revealCell(idx, silent) {
       this.revealed.add(idx);
       const row = Math.floor(idx / this.cols), col = idx % this.cols;
-      const cw = this.cssW / this.cols, ch = this.cssH / this.rows;
+      const grid = this._gridRect();
+      const cw = grid.w / this.cols, ch = grid.h / this.rows;
       // 清掉该格涂层（略外扩 1px 接缝）
-      this.ctx.clearRect(col * cw - 1, row * ch - 1, cw + 2, ch + 2);
+      this.ctx.clearRect(grid.x + col * cw - 1, grid.y + row * ch - 1, cw + 2, ch + 2);
       const sym = this.cells[idx];
       if (sym) { sym.classList.remove('pop'); void sym.offsetWidth; sym.classList.add('pop'); }
       if (!silent && typeof this.onCellReveal === 'function') {
-        this.onCellReveal(idx, sym ? sym.textContent : null);
+        this.onCellReveal(idx, sym ? (sym.dataset.sym || sym.textContent) : null);
       }
     },
 
@@ -556,17 +880,18 @@
     shake(amp, dur) {
       const el = document.getElementById('game');
       if (!el || prefersReducedMotion()) return;
-      // 窄屏下 .game 本身带 scale 缩放，震动时需一并保留，避免抖动瞬间“跳大小”
-      const scale = getComputedStyle(el).getPropertyValue('--fx-scale').trim() || '1';
+      // 基础的位移/缩放由 fitStage() 写在 #game 的内联样式里。
+      // 震动必须"叠加"在它之上，结束后还原（不能清空，否则舞台会跳回原始尺寸并上移）。
+      const base = el.style.transform || '';
       const start = performance.now();
       const tick = (now) => {
         const t = (now - start) / dur;
-        if (t >= 1) { el.style.transform = ''; return; }
+        if (t >= 1) { el.style.transform = ''; fitStage(); return; }   // 结束后重新套用自适应
         const cur = amp * (1 - t);
         const dx = (Math.random() * 2 - 1) * cur;
         const dy = (Math.random() * 2 - 1) * cur;
         const rot = (Math.random() * 2 - 1) * cur * 0.12;
-        el.style.transform = 'translate(' + dx.toFixed(1) + 'px,' + dy.toFixed(1) + 'px) rotate(' + rot.toFixed(2) + 'deg) scale(' + scale + ')';
+        el.style.transform = base + ' translate(' + dx.toFixed(1) + 'px,' + dy.toFixed(1) + 'px) rotate(' + rot.toFixed(2) + 'deg)';
         requestAnimationFrame(tick);
       };
       requestAnimationFrame(tick);
@@ -825,20 +1150,26 @@
    * 步骤5：肉鸽升级三选一增益
    * ========================================================= */
   const PERK_DEFS = [
-    { id: 'fortune',  name: '财源广进', icon: '💰', desc: '所有中奖金额 +12%（可叠加）' },
-    { id: 'thrifty',  name: '精打细算', icon: '✂️', desc: '购卡价 -8%，最多 -50%' },
-    { id: 'safety',   name: '稳健保底', icon: '🛡️', desc: '每张卡返还成本 ×25%，最多 100%' },
-    { id: 'jackpot2', name: '一夜暴富', icon: '🎲', desc: '中奖时 8% 概率金额 ×2（概率叠加）' },
-    { id: 'firstDouble', name: '首刮双倍', icon: '⚡', desc: '储存 1 次双倍机会；下一次中奖金额 ×2，未中奖不消耗' },
-    { id: 'amulet',   name: '护身符',   icon: '🧿', desc: '破产免死 1 次（金币归 50），可叠加' },
-    { id: 'combo',    name: '连击大师', icon: '🔥', desc: '连中 3 次后奖金 ×1.5，断连失效' },
-    { id: 'treasure', name: '鉴宝之眼', icon: '🔍', desc: '矿石 / 水果类中奖额 +20%（可叠加）' },
-    { id: 'burst',    name: '爆奖蓄能', icon: '🌟', desc: '未中奖蓄能 +10%，每层额外 +5%；中奖时释放加成，最高 +50%' },
-    { id: 'rebate',   name: '幸运加刮', icon: '🎟️', desc: '结算后 20% 概率返还本张卡价；每层 +8%，最高 60%' },
+    { id: 'fortune',  name: '财源广进', icon: '💰', iconImg: 'perk-sym-fortune', desc: '所有中奖金额 +12%（可叠加）' },
+    { id: 'thrifty',  name: '精打细算', icon: '✂️', iconImg: 'perk-sym-thrifty', desc: '购卡价 -8%，最多 -50%' },
+    { id: 'safety',   name: '稳健保底', icon: '🛡️', iconImg: 'perk-sym-safety', desc: '每张卡返还成本 ×25%，最多 100%' },
+    { id: 'jackpot2', name: '一夜暴富', icon: '🎲', iconImg: 'perk-sym-jackpot2', desc: '中奖时 8% 概率金额 ×2（概率叠加）' },
+    { id: 'firstDouble', name: '首刮双倍', icon: '⚡', iconImg: 'perk-sym-firstDouble', desc: '储存 1 次双倍机会；下一次中奖金额 ×2，未中奖不消耗' },
+    { id: 'amulet',   name: '护身符',   icon: '🧿', iconImg: 'perk-sym-amulet', desc: '破产免死 1 次（金币归 50），可叠加' },
+    { id: 'combo',    name: '连击大师', icon: '🔥', iconImg: 'perk-sym-combo', desc: '连中 3 次后奖金 ×1.5，断连失效' },
+    { id: 'treasure', name: '鉴宝之眼', icon: '🔍', iconImg: 'perk-sym-treasure', desc: '矿石 / 水果类中奖额 +20%（可叠加）' },
+    { id: 'burst',    name: '爆奖蓄能', icon: '🌟', iconImg: 'perk-sym-burst', desc: '未中奖蓄能 +10%，每层额外 +5%；中奖时释放加成，最高 +50%' },
+    { id: 'rebate',   name: '幸运加刮', icon: '🎟️', iconImg: 'perk-sym-rebate', desc: '结算后 20% 概率返还本张卡价；每层 +8%，最高 60%' },
   ];
   const PERK_MAP = {};
   PERK_DEFS.forEach((p) => { PERK_MAP[p.id] = p; });
   function perkCount(id) { return state.perks.filter((p) => p === id).length; }
+  // 增益图标：有图片素材时用图片，否则用 emoji（状态栏文字仍用 emoji）
+  function perkIconHtml(p, cls) {
+    return p.iconImg
+      ? '<span class="' + cls + ' perk-sym-img ' + p.iconImg + '"></span>'
+      : '<span class="' + cls + '">' + p.icon + '</span>';
+  }
 
   // 折后购卡价（精打细算，封顶 -50%）
   function cardPrice(card) {
@@ -934,7 +1265,7 @@
     const ov = document.createElement('div');
     ov.className = 'perk-overlay';
     ov.innerHTML =
-      '<div class="perk-modal">' +
+      '<div class="perk-modal perk-choice-modal">' +
         '<div class="perk-head">🎊 升到 Lv.' + state.level + ' · 三选一增益' +
           (perkPending > 1 ? '<span class="perk-more">还有 ' + (perkPending - 1) + ' 次</span>' : '') +
         '</div>' +
@@ -942,7 +1273,7 @@
           choices.map((p) => {
             const own = perkCount(p.id);
             return '<button class="perk-card" data-perk="' + p.id + '">' +
-              '<span class="perk-icon">' + p.icon + '</span>' +
+              perkIconHtml(p, 'perk-icon') +
               '<span class="perk-cname">' + p.name + (own ? (' <em>x' + own + '</em>') : '') + '</span>' +
               '<span class="perk-cdesc">' + p.desc + '</span>' +
             '</button>';
@@ -967,13 +1298,17 @@
   // 顶部增益条：按 id 聚合展示已拥有增益 + 叠加层数
   function renderPerks() {
     if (!els.perkBar) return;
-    if (!state.perks.length) { els.perkBar.innerHTML = '<span class="perk-empty">暂无增益 · 升级可三选一</span>'; return; }
+    if (!state.perks.length) { els.perkBar.innerHTML = ''; return; }   // 无增益时不显示任何文字
     const counts = {};
     state.perks.forEach((id) => { counts[id] = (counts[id] || 0) + 1; });
     els.perkBar.innerHTML = PERK_DEFS
       .filter((p) => counts[p.id])
-      .map((p) => '<span class="perk-chip" title="' + p.name + '：' + p.desc + '">' +
-        p.icon + (counts[p.id] > 1 ? '<em>x' + counts[p.id] + '</em>' : '') + '</span>')
+      .map((p) => '<span class="perk-chip">' +
+        perkIconHtml(p, 'perk-chip-sym') +
+        (counts[p.id] > 1 ? '<em class="perk-chip-num">x' + counts[p.id] + '</em>' : '') +
+        '<span class="perk-tip"><b>' + p.name + (counts[p.id] > 1 ? ' ×' + counts[p.id] : '') + '</b>' +
+          '<span class="perk-tip-desc">' + p.desc + '</span></span>' +
+      '</span>')
       .join('');
   }
 
@@ -982,11 +1317,11 @@
    *  acquire.type：initial 初始 / level 升级解锁 / shop 商店购买
    * ========================================================= */
   const TOOL_DEFS = [
-    { id: 'coin',    name: '硬币',   icon: '🪙', sub: '保底', short: '返还本卡最高单格估值（封顶卡价 50%）', desc: '揭晓后额外返还本卡最高单格估值（封顶卡价 50%）', acquire: { type: 'initial' } },
-    { id: 'shell',   name: '贝壳',   icon: '🐚', sub: '幸运', short: '好符号权重 +15%，💣/黑洞权重 -30%', desc: '好符号权重 +15%，💣/黑洞 -30%', acquire: { type: 'level', level: 2 } },
-    { id: 'clover',  name: '四叶草', icon: '🍀', sub: '护身', short: '开刮前移除 1 个 💣/黑洞', desc: '每张卡开刮前自动移除 1 个 💣/黑洞', acquire: { type: 'level', level: 3 } },
-    { id: 'crystal', name: '水晶球', icon: '🔮', sub: '透视', short: '发牌时预先揭示中央格', desc: '发牌时预先揭示中央格', acquire: { type: 'level', level: 4 } },
-    { id: 'drill',   name: '钻头',   icon: '⛏️', sub: '暴富', short: '矿洞/赌城中奖 +25%，💣伤害 +25%', desc: '矿洞 / 赌城中奖 +25%，但 💣 伤害 +25%', acquire: { type: 'level', level: 5 } },
+    { id: 'coin',    name: '硬币',   icon: '🪙', iconImg: 'tool-icon-coin', sub: '保底', short: '返还本卡最高单格估值（封顶卡价 50%）', desc: '揭晓后额外返还本卡最高单格估值（封顶卡价 50%）', acquire: { type: 'initial' } },
+    { id: 'shell',   name: '贝壳',   icon: '🐚', iconImg: 'tool-icon-shell', sub: '幸运', short: '好符号权重 +15%，💣/黑洞权重 -30%', desc: '好符号权重 +15%，💣/黑洞 -30%', acquire: { type: 'level', level: 2 } },
+    { id: 'clover',  name: '四叶草', icon: '🍀', iconImg: 'tool-icon-clover', sub: '护身', short: '开刮前移除 1 个 💣/黑洞', desc: '每张卡开刮前自动移除 1 个 💣/黑洞', acquire: { type: 'level', level: 3 } },
+    { id: 'crystal', name: '水晶球', icon: '🔮', iconImg: 'tool-icon-crystal', sub: '透视', short: '发牌时预先揭示中央格', desc: '发牌时预先揭示中央格', acquire: { type: 'level', level: 4 } },
+    { id: 'drill',   name: '钻头',   icon: '⛏️', iconImg: 'tool-icon-drill', sub: '暴富', short: '矿洞/赌城中奖 +25%，💣伤害 +25%', desc: '矿洞 / 赌城中奖 +25%，但 💣 伤害 +25%', acquire: { type: 'level', level: 5 } },
   ];
   const TOOL_MAP = {};
   TOOL_DEFS.forEach((t) => { TOOL_MAP[t.id] = t; });
@@ -1005,26 +1340,54 @@
     Scratch.canvas.style.cursor = 'url("data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg) + '") 10 10, grab';
   }
 
+  // 刮具说明气泡：纸片素材，出现在对应刮具圆框左方；切换刮具时出现，下一次点击后消失
+  let toolTipHideFn = null;
+  function showToolTip(tool) {
+    if (!els.toolTip || !els.toolTipText) return;
+    els.toolTipText.textContent = tool.desc;
+    const item = els.toolList.querySelector('.tool-item[data-tool="' + tool.id + '"]');
+    if (item) els.toolTip.style.top = Math.round(item.offsetTop + item.offsetHeight / 2) + 'px';
+    els.toolTip.classList.add('show');
+    if (toolTipHideFn) document.removeEventListener('click', toolTipHideFn, true);
+    toolTipHideFn = function hide() {
+      els.toolTip.classList.remove('show');
+      document.removeEventListener('click', hide, true);
+      toolTipHideFn = null;
+    };
+    // 等本次点击事件派发完成后再武装监听，避免立即触发消失
+    setTimeout(() => { if (toolTipHideFn) document.addEventListener('click', toolTipHideFn, true); }, 0);
+  }
+
+  // 刮具栏图标：有图片素材时用图片，否则用 emoji（刮卡时的鼠标光标始终用 emoji）
+  function toolIconHtml(t) {
+    return t.iconImg
+      ? '<span class="tool-emoji tool-icon-img ' + t.iconImg + '"></span>'
+      : '<span class="tool-emoji">' + t.icon + '</span>';
+  }
+
   // 刮具栏：动态渲染（装备态 / 持有 / 商店价 / 等级锁）
   function renderTools() {
     if (!els.toolList) return;
-    els.toolList.innerHTML = TOOL_DEFS.map((t) => {
+    els.toolList.innerHTML = TOOL_DEFS.map((t, i) => {
       const owned = state.ownedTools.includes(t.id);
       const equipped = owned && state.equippedTool === t.id;
       let cls = 'tool-item', badge;
-      if (equipped) { cls += ' equipped'; badge = '<span class="tool-flag">▶</span>'; }
-      else if (owned) { badge = '<span class="tool-own">持有</span>'; }
+      if (equipped) { cls += ' equipped'; badge = ''; }
+      else if (owned) { badge = ''; }
       else if (t.acquire.type === 'shop') { cls += ' buy'; badge = '<span class="tool-buy">💰' + t.acquire.price + '</span>'; }
       else if (t.acquire.type === 'level') { cls += ' locked'; badge = '<span class="tool-lock">🔒Lv.' + t.acquire.level + '</span>'; }
       else { cls += ' locked'; badge = '<span class="tool-lock">🔒</span>'; }
-      return '<button class="' + cls + '" data-tool="' + t.id + '" title="' + t.name + '·' + t.sub + '：' + t.desc + '">' +
+      const toolBtn = '<button class="' + cls + '" data-tool="' + t.id + '" aria-label="' + t.name + '·' + t.sub + '：' + t.desc + '">' +
         '<span class="tool-main">' +
-          '<span class="tool-emoji">' + t.icon + '</span>' +
-          '<span class="tool-name">' + t.name + '</span>' +
+          toolIconHtml(t) +
           badge +
         '</span>' +
-        (equipped ? '<span class="tool-desc">' + t.short + '</span>' : '') +
       '</button>';
+      // 下方数字按钮：与翻页 A/D 同款，数字对应快捷键 1~5
+      const keyBtn = '<button class="tool-key-btn" data-tool="' + t.id + '" aria-label="快捷键 ' + (i + 1) + '：' + t.name + '">' +
+        '<span class="page-btn-key">' + (i + 1) + '</span>' +
+      '</button>';
+      return '<div class="tool-entry">' + toolBtn + keyBtn + '</div>';
     }).join('');
     updateScratchCursor();
   }
@@ -1037,6 +1400,13 @@
     if (tools && tools.length) tools.forEach((t) => toolUnlockQueue.push(t));
     if (!toolUnlockOverlay) showNextToolUnlock();
   }
+  // 获得新刮具弹窗里的刮具图片（与底图同为 623×623 画布，天然对齐）
+  const UNLOCK_ICON_IMG = {
+    shell: 'tool-unlock-icon-shell',
+    clover: 'tool-unlock-icon-clover',
+    crystal: 'tool-unlock-icon-crystal',
+    drill: 'tool-unlock-icon-drill',
+  };
   function showNextToolUnlock() {
     if (toolUnlockOverlay) { toolUnlockOverlay.remove(); toolUnlockOverlay = null; }
     if (!toolUnlockQueue.length) {
@@ -1050,9 +1420,13 @@
     ov.className = 'perk-overlay tool-unlock-overlay';
     ov.innerHTML =
       '<div class="perk-modal tool-unlock-modal">' +
+        '<span class="tool-unlock-deco tool-unlock-deco-title"></span>' +
+        '<span class="tool-unlock-deco tool-unlock-deco-text"></span>' +
+        (UNLOCK_ICON_IMG[t.id] ? '<span class="tool-unlock-deco tool-unlock-icon-img ' + UNLOCK_ICON_IMG[t.id] + '"></span>' : '') +
         '<div class="perk-head">🎊 ' + lv + '获得新刮具</div>' +
         '<div class="tool-unlock-card">' +
-          '<span class="tool-unlock-icon">' + t.icon + '</span>' +
+          // 有图片时隐藏 emoji（保留占位，保证下方名称/说明位置不变）
+          '<span class="tool-unlock-icon' + (UNLOCK_ICON_IMG[t.id] ? ' is-hidden' : '') + '">' + t.icon + '</span>' +
           '<span class="tool-unlock-name">' + t.name + '<em>' + t.sub + '</em></span>' +
           '<span class="tool-unlock-desc">' + t.desc + '</span>' +
         '</div>' +
@@ -1078,6 +1452,7 @@
       const redealCard = (hasActiveCard && currentCard) ? currentCard : null;
       const redealPrice = currentCardPrice;
       state.equippedTool = toolId; save(); render();
+      showToolTip(t);
       if (redealCard) {
         dealCard(redealCard, { animateSwap: true }); // 未开刮换刮具：同款卡重新发牌，让发牌期刮具效果重新生效
         currentCardPrice = redealPrice;    // 保留这张卡原本的花费，不重复扣钱
@@ -1093,6 +1468,7 @@
       state.ownedTools.push(toolId);
       state.equippedTool = toolId;
       save(); render();
+      showToolTip(t);
       setStatus('🛒 购入并佩戴刮具「' + t.icon + t.name + '」：' + t.desc); return;
     }
     if (t.acquire.type === 'level') { setStatus('刮具「' + t.name + '」需升到 Lv.' + t.acquire.level + ' 解锁'); return; }
@@ -1102,7 +1478,7 @@
 
 
   /* ===== 升级 / 解锁 ===== */
-  const UNLOCK_BY_LEVEL = { 2: 'orchard', 3: 'mine', 4: 'casino', 5: 'star', 6: 'spacetime', 7: 'myth', 8: 'genesis' };
+  const UNLOCK_BY_LEVEL = { 2: 'orchard', 3: 'mine', 4: 'casino', 5: 'star', 6: 'spacetime' };
   // 金币达阈值即升级（永久），解锁卡片 / 刮具；返回本次解锁内容
   function checkLevelUp() {
     const names = [], tools = []; let levels = 0;
@@ -1128,27 +1504,15 @@
   // 渲染卡片右侧说明面板：中奖要求 + 各图案出现概率
   function renderCardInfo(card) {
     if (!els.cardInfo) return;
-    const total = card.pool.reduce((s, p) => s + p.w, 0);
-    const odds = card.pool.map((p) => {
-      const pct = (p.w / total) * 100;
-      const payCls = p.danger ? 'od-pay danger' : 'od-pay';
-      return (
-        '<li>' +
-          '<span class="od-sym">' + p.s + '</span>' +
-          '<div class="od-mid">' +
-            '<div class="od-top">' +
-              '<span class="od-name">' + p.label + '</span>' +
-              '<span class="' + payCls + '">' + (p.pay || '') + '</span>' +
-            '</div>' +
-            '<div class="od-bar"><i style="width:' + pct.toFixed(0) + '%"></i></div>' +
-          '</div>' +
-          '<span class="od-pct">' + pct.toFixed(1) + '%</span>' +
-        '</li>'
-      );
-    }).join('');
+    const inlineInfo = card && !!SKIN_CLASS[card.skin];
+    els.cardInfo.classList.toggle('is-hidden', inlineInfo);
+    if (inlineInfo) {
+      els.cardInfo.innerHTML = '';
+      return;
+    }
     els.cardInfo.innerHTML =
       '<div class="ci-head">' +
-        '<span class="ci-title">' + card.art + ' ' + card.name + '</span>' +
+        '<span class="ci-title">' + cardArtHtml(card, 'ci-art') + '<span>' + card.name + '</span></span>' +
         '<span class="ci-price">售价 ' + card.price + '</span>' +
       '</div>' +
       '<div class="ci-section">' +
@@ -1156,8 +1520,7 @@
         '<p class="ci-rule">' + card.rule + '</p>' +
       '</div>' +
       '<div class="ci-section">' +
-        '<div class="ci-label">图案 & 出现概率</div>' +
-        '<ul class="ci-odds">' + odds + '</ul>' +
+        '<ul class="ci-odds">' + cardOddsHtml(card) + '</ul>' +
       '</div>';
   }
 
@@ -1325,8 +1688,9 @@
     if (els.scratchArea) {
       const t = document.createElement('div');
       t.className = 'hit-toast bad';
-      t.textContent = p.bad + ' ' + label + '！';
-      t.style.top = (20 + _badHintActive * 13) + '%';
+      t.innerHTML = symbolHtml(card, p.bad) + ' ' + label + '！';
+      // 负反馈放到卡片下半区（72%/82%/92%），避让已上移到约 22% 的最终结算弹窗
+      t.style.top = (72 + (_badHintActive % 3) * 10) + '%';
       _badHintActive++;
       els.scratchArea.appendChild(t);
       setTimeout(() => { t.remove(); _badHintActive = Math.max(0, _badHintActive - 1); }, 950);
@@ -1381,8 +1745,9 @@
     if (amount <= 0 || !els.scratchArea) return;
     const t = document.createElement('div');
     t.className = 'hit-toast good';
-    t.textContent = sym + ' +' + amount;
-    t.style.top = (50 + (_goodHintActive % 3) * 13) + '%';
+    t.innerHTML = symbolHtml(currentCard, sym) + ' +' + amount;
+    // 正反馈放在卡片中区（44%/55%/66%），与下半区的负反馈和上方结算弹窗都错开
+    t.style.top = (44 + (_goodHintActive % 3) * 11) + '%';
     _goodHintActive++;
     els.scratchArea.appendChild(t);
     setTimeout(() => { t.remove(); _goodHintActive = Math.max(0, _goodHintActive - 1); }, 950);
@@ -1462,8 +1827,11 @@
     addPerk: (id) => { if (PERK_MAP[id]) { state.perks.push(id); save(); render(); } return state.perks.slice(); }, // 调试：直接加增益
     offerPerks: (n) => queuePerkChoices(n || 1), // 调试：弹出三选一
     equip: selectTool,    // LuckyScratch.equip('drill') 佩戴/购买刮具
+    debug: enterDebugMode, // LuckyScratch.debug() 同左下角 🔧：全解锁 + 得分 10000
     giveTool: (id) => { if (TOOL_MAP[id] && !state.ownedTools.includes(id)) state.ownedTools.push(id); save(); render(); return state.ownedTools.slice(); }, // 调试：解锁刮具
     fx: (lv) => FX.play(lv == null ? 4 : lv),   // 调试：预览中奖特效 LuckyScratch.fx(1~4)
+    calibrate: () => setCopperCalibration(!copperCalibOn),  // 调试：开关铜板卡底图校准模式
+    align: (o) => { if (o && typeof o === 'object') { copperAlign = Object.assign(copperAlign, o); applyCopperAlign(); saveCopperAlign(); } return JSON.parse(JSON.stringify(copperAlign)); },
   };
 
   /* ===== 初始化 ===== */
@@ -1472,6 +1840,7 @@
     render();
     FX.init();
     Scratch.init(els.scratchArea);
+    loadCopperAlign();
     Scratch.onReveal = settle;   // 整张揭晓 → 判奖结算
     // 刮出图案 → 即时反馈：坏图案弹负提示，凑成奖励则弹金额（后续凑更多会追加）
     Scratch.onCellReveal = (_idx, sym) => {
@@ -1480,23 +1849,64 @@
       checkLiveReward();
     };
 
-    // 商店点击 = 购买并发卡
+    // 下方购卡槽点击 = 购买并发卡
     els.shopList.addEventListener('click', (e) => {
       const btn = e.target.closest('.card-item');
       if (btn && btn.dataset.card) buyCard(btn.dataset.card);
     });
+    if (els.shopPrev) els.shopPrev.addEventListener('click', () => { changeShopPage(-1); });
+    if (els.shopNext) els.shopNext.addEventListener('click', () => { changeShopPage(1); });
 
-    // 刮具栏点击 = 佩戴 / 购买 / 解锁提示
+    // 键盘快捷键：A = 上一页，D = 下一页
+    document.addEventListener('keydown', (e) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      // 升级三选一 / 刮具解锁弹窗打开时不响应翻页
+      if (document.querySelector('.perk-overlay')) return;
+      const key = (e.key || '').toLowerCase();
+      if (key === 'a') { if (changeShopPage(-1)) e.preventDefault(); }
+      else if (key === 'd') { if (changeShopPage(1)) e.preventDefault(); }
+      // 数字 1~5 = 切换对应刮具
+      else if (key >= '1' && key <= '5') {
+        const t = TOOL_DEFS[Number(key) - 1];
+        if (t) { selectTool(t.id); e.preventDefault(); }
+      }
+    });
+
+    // 刮具栏点击 = 佩戴 / 购买 / 解锁提示（含下方数字按钮）
     els.toolList.addEventListener('click', (e) => {
-      const btn = e.target.closest('.tool-item');
+      const btn = e.target.closest('.tool-item, .tool-key-btn');
       if (btn && btn.dataset.tool) selectTool(btn.dataset.tool);
     });
+
+    initHudLayout();   // 顶栏隐形边界（得分 ↔ 等级条）
 
     dealTestCard('copper');   // 开局赠送一张铜板卡（免费首刮）
     setStatus('开局赠送一张铜板卡，刮开试试~ 之后从商店购买新卡');
 
-    els.resetBtn.addEventListener('click', () => {
-      if (confirm('确定清空存档重新开始？')) reset();
+    // 调试面板：点扳手开合，点面板外关闭
+    function toggleDebugPanel(force) {
+      if (!els.debugPanel) return;
+      const open = typeof force === 'boolean' ? force : !els.debugPanel.classList.contains('open');
+      els.debugPanel.classList.toggle('open', open);
+    }
+    if (els.debugBtn) {
+      els.debugBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleDebugPanel(); });
+    }
+    if (els.dbgUnlockAll) {
+      els.dbgUnlockAll.addEventListener('click', () => { enterDebugMode(); toggleDebugPanel(false); });
+    }
+    if (els.dbgLevelUp) {
+      els.dbgLevelUp.addEventListener('click', () => { debugLevelUp(); toggleDebugPanel(false); });
+    }
+    if (els.dbgReset) {
+      els.dbgReset.addEventListener('click', () => {
+        if (confirm('确定清空存档重新开始？')) { reset(); toggleDebugPanel(false); }
+      });
+    }
+    document.addEventListener('click', (e) => {
+      if (!els.debugPanel || !els.debugPanel.classList.contains('open')) return;
+      if (els.debugPanel.contains(e.target) || (els.debugBtn && els.debugBtn.contains(e.target))) return;
+      toggleDebugPanel(false);
     });
     console.log('[lucky-scratch] 判奖 + 结算引擎就绪', state);
   }
